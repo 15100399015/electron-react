@@ -63,7 +63,7 @@ const configuration: webpack.Configuration = {
   module: {
     rules: [
       {
-        test: /\.s?(c|a)ss$/,
+        test: /\.(less|css)$/,
         use: [
           'style-loader',
           {
@@ -74,14 +74,14 @@ const configuration: webpack.Configuration = {
               importLoaders: 1,
             },
           },
-          'sass-loader',
+          'less-loader',
         ],
-        include: /\.module\.s?(c|a)ss$/,
+        include: /\.module\.(less|css)$/,
       },
       {
-        test: /\.s?css$/,
-        use: ['style-loader', 'css-loader', 'sass-loader'],
-        exclude: /\.module\.s?(c|a)ss$/,
+        test: /\.(less|css)$/,
+        use: ['style-loader', 'css-loader', 'less-loader'],
+        exclude: /\.module\.(less|css)$/,
       },
       // Fonts
       {
