@@ -1,24 +1,35 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { ProLayout, PageContainer } from '@ant-design/pro-components';
-import { routes } from '../router';
-
+import { SmileFilled } from '@ant-design/icons';
 function Layout() {
   const location = useLocation();
 
   return (
     <ProLayout
       siderWidth={180}
-      logo={false}
+      title="家谱系统"
       contentStyle={{ padding: 0 }}
-      route={{ path: '/', routes }}
+      route={{
+        path: '/',
+        routes: [
+          {
+            path: '/pedigree',
+            name: '世系图',
+            icon: <SmileFilled />,
+          },
+          {
+            path: '/member/list',
+            name: '人员管理',
+            icon: <SmileFilled />,
+          },
+        ],
+      }}
       location={{ pathname: location.pathname }}
       menuItemRender={(item, defaultDom) => {
         return <Link to={item.path as string}>{defaultDom}</Link>;
       }}
     >
-      <PageContainer>
-        <Outlet />
-      </PageContainer>
+      <Outlet />
     </ProLayout>
   );
 }

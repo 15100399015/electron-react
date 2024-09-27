@@ -1,27 +1,29 @@
-import { CrownFilled, SmileFilled } from '@ant-design/icons';
-import { createHashRouter, RouteObject } from 'react-router-dom';
+import { createHashRouter } from 'react-router-dom';
 
 import Layout from '../layout';
-import Home from '../pages/Home';
-import Member from '../pages/Member';
-
-export const routes: RouteObject[] = [
-  {
-    path: '/welcome',
-    name: '欢迎',
-    icon: <SmileFilled />,
-    element: <Home />,
-  },
-  {
-    path: '/admin',
-    name: '管理页',
-    icon: <CrownFilled />,
-    element: <Member />,
-  },
-];
+import MemberDetail from '../pages/MemberDetail';
+import MemberList from '../pages/MemberList';
+import Pedigree from '../pages/Pedigree';
 
 const router = createHashRouter([
-  { path: '/', element: <Layout />, children: routes },
+  {
+    path: '/',
+    element: <Layout />,
+    children: [
+      {
+        path: '/pedigree',
+        element: <Pedigree />,
+      },
+      {
+        path: '/member/list',
+        element: <MemberList />,
+      },
+      {
+        path: '/member/detail/:memberId',
+        element: <MemberDetail />,
+      },
+    ],
+  },
 ]);
 
 export default router;
