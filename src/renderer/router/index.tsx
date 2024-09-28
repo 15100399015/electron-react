@@ -7,20 +7,19 @@ import Pedigree from '../pages/Pedigree';
 
 const router = createHashRouter([
   {
-    path: '/',
     element: <Layout />,
     children: [
       {
-        path: '/pedigree',
-        element: <Pedigree />,
+        path: '/',
+        Component: Pedigree,
       },
       {
         path: '/member/list',
-        element: <MemberList />,
+        Component: MemberList,
       },
       {
         path: '/member/detail/:memberId',
-        element: <MemberDetail />,
+        Component: MemberDetail,
       },
     ],
   },

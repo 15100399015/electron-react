@@ -1,6 +1,6 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { ProLayout, PageContainer } from '@ant-design/pro-components';
-import { SmileFilled } from '@ant-design/icons';
+import { ProLayout } from '@ant-design/pro-components';
+import { ApartmentOutlined, BarsOutlined, SmileFilled } from '@ant-design/icons';
 function Layout() {
   const location = useLocation();
 
@@ -10,17 +10,16 @@ function Layout() {
       title="家谱系统"
       contentStyle={{ padding: 0 }}
       route={{
-        path: '/',
         routes: [
           {
-            path: '/pedigree',
+            path: '/',
             name: '世系图',
-            icon: <SmileFilled />,
+            icon: <ApartmentOutlined />,
           },
           {
             path: '/member/list',
             name: '人员管理',
-            icon: <SmileFilled />,
+            icon: <BarsOutlined />,
           },
         ],
       }}

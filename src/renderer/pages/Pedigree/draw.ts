@@ -1,5 +1,13 @@
 import { DisplayObject } from '@antv/g-lite';
-import { Badge, ExtensionCategory, Graph, Label, Rect, RectStyleProps, register } from '@antv/g6';
+import {
+  Badge,
+  ExtensionCategory,
+  Graph,
+  Label,
+  Rect,
+  RectStyleProps,
+  register,
+} from '@antv/g6';
 
 /**
  * Draw a chart node with different ui based on the zoom level.
@@ -81,9 +89,6 @@ export function drawChart(dom: HTMLDivElement, data: any) {
         lineWidth: 1,
         ports: [{ placement: 'top' }, { placement: 'bottom' }],
         radius: 2,
-        shadowBlur: 10,
-        shadowColor: '#e0e0e0',
-        shadowOffsetX: 3,
         size: [100, 60],
         stroke: '#C0C0C0',
         fill: '#ffffff',
@@ -112,6 +117,42 @@ export function drawChart(dom: HTMLDivElement, data: any) {
       {
         type: 'drag-canvas',
         range: Infinity,
+      },
+    ],
+    plugins: [
+      {
+        type: 'toolbar',
+        key: 'toolbar',
+        position: 'top-right',
+        onClick: (item) => {
+          if (item === 'export') {
+            graph
+              .toDataURL({
+                encoderOptions: 1,
+                mode: 'overall',
+                type: 'image/png',
+              })
+              .then((url) => {
+                console.log(url);
+              });
+          } else {
+            alert('item clicked:' + item);
+          }
+        },
+        getItems: () => {
+          // G6 内置了 9 个 icon，分别是 zoom-in、zoom-out、redo、undo、edit、delete、auto-fit、export、reset
+          return [
+            { id: 'zoom-in', value: 'zoom-in' },
+            { id: 'zoom-out', value: 'zoom-out' },
+            { id: 'redo', value: 'redo' },
+            { id: 'undo', value: 'undo' },
+            { id: 'edit', value: 'edit' },
+            { id: 'delete', value: 'delete' },
+            { id: 'auto-fit', value: 'auto-fit' },
+            { id: 'export', value: 'export' },
+            { id: 'reset', value: 'reset' },
+          ];
+        },
       },
     ],
   });

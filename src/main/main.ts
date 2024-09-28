@@ -1,5 +1,5 @@
 import path from 'path';
-import { app, BrowserWindow, shell } from 'electron';
+import { app, BrowserWindow, shell, screen } from 'electron';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 import { appDataSource } from './database';
@@ -46,10 +46,14 @@ const createWindow = async () => {
     await installExtensions();
   }
 
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const { width, height } = primaryDisplay.workAreaSize;
+
+  // 创建窗口
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1024,
-    height: 728,
+    width: width,
+    height: height,
     icon: getAssetPath('icon.png'),
     webPreferences: {
       preload: app.isPackaged
@@ -60,6 +64,7 @@ const createWindow = async () => {
 
   mainWindow.loadURL(resolveHtmlPath('index.html'));
 
+  // 显示窗口
   mainWindow.on('ready-to-show', () => {
     if (!mainWindow) {
       throw new Error('"mainWindow" is not defined');
@@ -71,13 +76,16 @@ const createWindow = async () => {
     }
   });
 
+  // 窗口关闭
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
 
+  // 系统菜单设置
   const menuBuilder = new MenuBuilder(mainWindow);
   menuBuilder.buildMenu();
 
+  // 超链接在外部打开
   mainWindow.webContents.setWindowOpenHandler((edata) => {
     shell.openExternal(edata.url);
     return { action: 'deny' };
@@ -85,7 +93,7 @@ const createWindow = async () => {
 };
 
 /**
- * 添加事件监听器
+ * window 中所有关口关闭则退出程序
  */
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
@@ -95,10 +103,8 @@ app.on('window-all-closed', () => {
 
 appDataSource.setOptions({ database: getAssetPath('database/data.sqlite') });
 
-Promise.all([app.whenReady(), appDataSource.initialize()])
+Promise.all([app.whenReady(), appDataSource.initialize(), register()])
   .then(() => {
-    register();
-
     createWindow();
     app.on('activate', () => {
       if (mainWindow === null) createWindow();

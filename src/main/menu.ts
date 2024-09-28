@@ -18,6 +18,7 @@ export default class MenuBuilder {
     this.mainWindow = mainWindow;
   }
 
+  // 建立菜单
   buildMenu(): Menu {
     if (
       process.env.NODE_ENV === 'development' ||
@@ -37,13 +38,14 @@ export default class MenuBuilder {
     return menu;
   }
 
+  // 开发环境设置
   setupDevelopmentEnvironment(): void {
     this.mainWindow.webContents.on('context-menu', (_, props) => {
       const { x, y } = props;
 
       Menu.buildFromTemplate([
         {
-          label: 'Inspect element',
+          label: '检查元素',
           click: () => {
             this.mainWindow.webContents.inspectElement(x, y);
           },
@@ -52,6 +54,7 @@ export default class MenuBuilder {
     });
   }
 
+  // mac系统菜单
   buildDarwinTemplate(): MenuItemConstructorOptions[] {
     const subMenuAbout: DarwinMenuItemConstructorOptions = {
       label: 'Electron',
@@ -85,7 +88,7 @@ export default class MenuBuilder {
       ],
     };
     const subMenuEdit: DarwinMenuItemConstructorOptions = {
-      label: 'Edit',
+      label: '编辑',
       submenu: [
         { label: 'Undo', accelerator: 'Command+Z', selector: 'undo:' },
         { label: 'Redo', accelerator: 'Shift+Command+Z', selector: 'redo:' },
@@ -100,25 +103,26 @@ export default class MenuBuilder {
         },
       ],
     };
+    // 开发环境
     const subMenuViewDev: MenuItemConstructorOptions = {
-      label: 'View',
+      label: '视图',
       submenu: [
         {
-          label: 'Reload',
+          label: '重新加载',
           accelerator: 'Command+R',
           click: () => {
             this.mainWindow.webContents.reload();
           },
         },
         {
-          label: 'Toggle Full Screen',
+          label: '切换全屏',
           accelerator: 'Ctrl+Command+F',
           click: () => {
             this.mainWindow.setFullScreen(!this.mainWindow.isFullScreen());
           },
         },
         {
-          label: 'Toggle Developer Tools',
+          label: '开发者工具',
           accelerator: 'Alt+Command+I',
           click: () => {
             this.mainWindow.webContents.toggleDevTools();
@@ -126,11 +130,12 @@ export default class MenuBuilder {
         },
       ],
     };
+    // 生产环境
     const subMenuViewProd: MenuItemConstructorOptions = {
-      label: 'View',
+      label: '视图',
       submenu: [
         {
-          label: 'Toggle Full Screen',
+          label: '切换全屏',
           accelerator: 'Ctrl+Command+F',
           click: () => {
             this.mainWindow.setFullScreen(!this.mainWindow.isFullScreen());
@@ -139,29 +144,29 @@ export default class MenuBuilder {
       ],
     };
     const subMenuWindow: DarwinMenuItemConstructorOptions = {
-      label: 'Window',
+      label: '窗口',
       submenu: [
         {
-          label: 'Minimize',
+          label: '最小化',
           accelerator: 'Command+M',
           selector: 'performMiniaturize:',
         },
-        { label: 'Close', accelerator: 'Command+W', selector: 'performClose:' },
+        { label: '关闭', accelerator: 'Command+W', selector: 'performClose:' },
         { type: 'separator' },
         { label: 'Bring All to Front', selector: 'arrangeInFront:' },
       ],
     };
     const subMenuHelp: MenuItemConstructorOptions = {
-      label: 'Help',
+      label: '帮助',
       submenu: [
         {
-          label: 'Learn More',
+          label: '学习更多',
           click() {
             shell.openExternal('https://electronjs.org');
           },
         },
         {
-          label: 'Documentation',
+          label: '文档',
           click() {
             shell.openExternal(
               'https://github.com/electron/electron/tree/main/docs#readme',
@@ -169,13 +174,13 @@ export default class MenuBuilder {
           },
         },
         {
-          label: 'Community Discussions',
+          label: '讨论',
           click() {
             shell.openExternal('https://www.electronjs.org/community');
           },
         },
         {
-          label: 'Search Issues',
+          label: '问题',
           click() {
             shell.openExternal('https://github.com/electron/electron/issues');
           },
@@ -192,17 +197,18 @@ export default class MenuBuilder {
     return [subMenuAbout, subMenuEdit, subMenuView, subMenuWindow, subMenuHelp];
   }
 
+  // 默认菜单
   buildDefaultTemplate() {
     const templateDefault = [
       {
-        label: '&File',
+        label: '文件',
         submenu: [
           {
-            label: '&Open',
+            label: '打开',
             accelerator: 'Ctrl+O',
           },
           {
-            label: '&Close',
+            label: '关闭',
             accelerator: 'Ctrl+W',
             click: () => {
               this.mainWindow.close();
@@ -211,20 +217,20 @@ export default class MenuBuilder {
         ],
       },
       {
-        label: '&View',
+        label: '视图',
         submenu:
           process.env.NODE_ENV === 'development' ||
           process.env.DEBUG_PROD === 'true'
             ? [
                 {
-                  label: '&Reload',
+                  label: '重新加载',
                   accelerator: 'Ctrl+R',
                   click: () => {
                     this.mainWindow.webContents.reload();
                   },
                 },
                 {
-                  label: 'Toggle &Full Screen',
+                  label: '切换全屏',
                   accelerator: 'F11',
                   click: () => {
                     this.mainWindow.setFullScreen(
@@ -233,7 +239,7 @@ export default class MenuBuilder {
                   },
                 },
                 {
-                  label: 'Toggle &Developer Tools',
+                  label: '开发者工具',
                   accelerator: 'Alt+Ctrl+I',
                   click: () => {
                     this.mainWindow.webContents.toggleDevTools();
@@ -242,7 +248,7 @@ export default class MenuBuilder {
               ]
             : [
                 {
-                  label: 'Toggle &Full Screen',
+                  label: '切换全屏',
                   accelerator: 'F11',
                   click: () => {
                     this.mainWindow.setFullScreen(
@@ -253,16 +259,16 @@ export default class MenuBuilder {
               ],
       },
       {
-        label: 'Help',
+        label: '帮助',
         submenu: [
           {
-            label: 'Learn More',
+            label: '学习更多',
             click() {
               shell.openExternal('https://electronjs.org');
             },
           },
           {
-            label: 'Documentation',
+            label: '文档',
             click() {
               shell.openExternal(
                 'https://github.com/electron/electron/tree/main/docs#readme',
@@ -270,13 +276,13 @@ export default class MenuBuilder {
             },
           },
           {
-            label: 'Community Discussions',
+            label: '社区',
             click() {
               shell.openExternal('https://www.electronjs.org/community');
             },
           },
           {
-            label: 'Search Issues',
+            label: '问题',
             click() {
               shell.openExternal('https://github.com/electron/electron/issues');
             },
