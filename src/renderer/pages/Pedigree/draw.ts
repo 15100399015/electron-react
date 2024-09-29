@@ -135,8 +135,7 @@ export function drawChart(dom: HTMLDivElement, data: any) {
               .then((url) => {
                 console.log(url);
               });
-          } else {
-            alert('item clicked:' + item);
+          } else if (item === 'reset') {
           }
         },
         getItems: () => {

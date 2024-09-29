@@ -45,6 +45,42 @@ function updateTreeLayer(id: string, diff: string) {
     `;
 }
 
+async function queryMemberDataScreen(body) {
+  const repository = appDataSource.getRepository(Member);
+
+  // 根据世代分组
+  const generationGroup = await repository
+    .createQueryBuilder()
+    .select(['generation'])
+    .addSelect('COUNT(*)', 'member_count')
+    .groupBy('generation')
+    .orderBy('generation', 'ASC')
+    .getRawMany();
+
+  // 人口总数
+  const total = await repository.createQueryBuilder().getCount();
+
+  // 平均生育数
+  const result = await repository.query(
+    `SELECT AVG(child_count) as num FROM (SELECT parentId, COUNT(*) as child_count FROM member GROUP BY parentId);`,
+  );
+
+  return {
+    total,
+    generationTotal: generationGroup.length,
+    avgOffspringNum: Array.isArray(result) ? result[0].num : 0,
+    generationGroup: generationGroup.map((item, i, arr) => {
+      const { member_count, generation } = item;
+      const nextItem = arr[i + 1];
+      return {
+        generation: generation,
+        member_count: member_count,
+        avgOffspringNum: (nextItem?.member_count || 0) / member_count,
+      };
+    }),
+  };
+}
+
 // 获取所有成员列表
 async function queryMemberTree(body) {
   const { rootId } = body;
@@ -209,6 +245,7 @@ async function removeMember(body) {
 }
 
 export const member = {
+  '/member/dataScreen': queryMemberDataScreen,
   '/member/queryTree': queryMemberTree,
   '/member/queryById': queryMemberById,
   '/member/add': addMember,

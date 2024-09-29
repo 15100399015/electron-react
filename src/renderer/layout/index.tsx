@@ -1,6 +1,10 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { ProLayout } from '@ant-design/pro-components';
-import { ApartmentOutlined, BarsOutlined, SmileFilled } from '@ant-design/icons';
+import {
+  ApartmentOutlined,
+  BarsOutlined,
+  SmileFilled,
+} from '@ant-design/icons';
 function Layout() {
   const location = useLocation();
 
@@ -9,6 +13,8 @@ function Layout() {
       siderWidth={180}
       title="家谱系统"
       contentStyle={{ padding: 0 }}
+      collapsed
+      collapsedButtonRender={false}
       route={{
         routes: [
           {
