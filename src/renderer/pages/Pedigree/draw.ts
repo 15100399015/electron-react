@@ -11,7 +11,7 @@ import {
 } from '@antv/g6';
 
 /**
- * Draw a chart node with different ui based on the zoom level.
+ * 自定义节点
  */
 class ChartNode extends Rect {
   get data(): any {
@@ -133,6 +133,15 @@ const uDarkColors = [
   '#CAFFF3',
 ];
 
+const gColors: string[] = [];
+const ugColors: string[] = [];
+lightColors.forEach((color, i) => {
+  gColors.push('l(45) 0:' + color + ' 1:' + darkColors[i]);
+});
+uLightColors.forEach((color, i) => {
+  ugColors.push('l(45) 0:' + color + ' 1:' + uDarkColors[i]);
+});
+
 export function drawChart(dom: HTMLDivElement, data: any) {
   const graph = new Graph({
     container: dom,
@@ -141,30 +150,35 @@ export function drawChart(dom: HTMLDivElement, data: any) {
     autoResize: true,
     node: {
       type: 'chart-node',
-      style: {
-        labelPlacement: 'center',
-        ports: [{ placement: 'top' }, { placement: 'bottom' }],
-        radius: 5,
-        size: [100, 60],
-        fill: 'l(45) 0:#8FE9FF 1:#7DA8FF',
-        lineWidth: 1,
-        stroke: 'l(45) 0:#CADBFF 1:#CFF6FF',
-        icon: true,
-        iconSrc:
-          'https://gw.alipayobjects.com/zos/basement_prod/012bcf4f-423b-4922-8c24-32a89f8c41ce.svg',
+      style: (data) => {
+        // 0 3 6
+        const strokeColor = ugColors[0];
+        return {
+          labelPlacement: 'center',
+          // ports: [{ placement: 'top' }, { placement: 'bottom' }],
+          radius: 5,
+          size: [100, 60],
+          fill: strokeColor,
+          lineWidth: 1,
+          stroke: 'l(45) 0:#CADBFF 1:#CFF6FF',
+          icon: true,
+          iconSrc:
+            'https://gw.alipayobjects.com/zos/basement_prod/012bcf4f-423b-4922-8c24-32a89f8c41ce.svg',
+        };
       },
     },
     edge: {
       type: 'polyline',
-      style: {
-        router: { type: 'orth' },
-        endArrow: true,
-        endArrowType: 'vee',
-        endArrowSize: 5,
-        endArrowStroke: '#44E6C1',
-        radius: 5,
-        lineWidth: 2,
-        stroke: 'l(90) 0:#ffffff 1:#44E6C1',
+      style: (data) => {
+        return {
+          router: { type: 'orth' },
+          endArrow: true,
+          endArrowType: 'vee',
+          endArrowSize: 5,
+          radius: 5,
+          lineWidth: 2,
+          stroke: '#cccccc',
+        };
       },
     },
     layout: {
