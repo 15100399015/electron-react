@@ -131,10 +131,10 @@ const TableList: React.FC = () => {
       dataIndex: 'memberId',
       valueType: 'option',
       render: (_, record) => [
-        <a key="config" onClick={() => handleEdit(record)}>
+        <a key="edit" onClick={() => handleEdit(record)}>
           编辑
         </a>,
-        <a key="config" onClick={() => handleDelete(record)}>
+        <a key="delete" onClick={() => handleDelete(record)}>
           删除
         </a>,
       ],

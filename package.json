@@ -84,6 +84,7 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.16.0",
     "react-use": "^17.5.1",
+    "sqlite3": "^5.1.7",
     "typeorm": "^0.3.20"
   },
   "devDependencies": {

@@ -192,6 +192,41 @@ export function drawChart(dom: HTMLDivElement, data: any) {
         rotate: Math.PI / 12,
         text: '楊氏家谱',
       },
+
+      {
+        type: 'toolbar',
+        key: 'toolbar',
+        position: 'top-right',
+        onClick: (item) => {
+          if (item === 'export') {
+            graph
+              .toDataURL({
+                encoderOptions: 1,
+                mode: 'overall',
+                type: 'image/png',
+              })
+              .then((url) => {
+                console.log(url);
+              });
+          } else {
+            alert('item clicked:' + item);
+          }
+        },
+        getItems: () => {
+          // G6 内置了 9 个 icon，分别是 zoom-in、zoom-out、redo、undo、edit、delete、auto-fit、export、reset
+          return [
+            { id: 'zoom-in', value: 'zoom-in' },
+            { id: 'zoom-out', value: 'zoom-out' },
+            { id: 'redo', value: 'redo' },
+            { id: 'undo', value: 'undo' },
+            { id: 'edit', value: 'edit' },
+            { id: 'delete', value: 'delete' },
+            { id: 'auto-fit', value: 'auto-fit' },
+            { id: 'export', value: 'export' },
+            { id: 'reset', value: 'reset' },
+          ];
+        },
+      },
     ],
   });
 

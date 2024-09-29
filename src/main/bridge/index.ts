@@ -5,7 +5,7 @@ const map = {
   request: handleRequest,
 };
 
-export function register() {
+export async function register() {
   Object.entries(map).forEach(([key, value]) => {
     ipcMain.handle(key, value);
   });

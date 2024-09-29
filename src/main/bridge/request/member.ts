@@ -1,40 +1,40 @@
 import { appDataSource } from '../../database/index';
-import { Like, In } from 'typeorm';
+import { Like, In, FindOptionsWhere, FindOptionsOrder } from 'typeorm';
 import { Member } from '../../database/model/Member';
 import { Event } from '../../database/model/Event';
 
 const orderMap = { ascend: 'ASC', descend: 'DESC' };
 
-const mapColumns = (tableName, columns) => {
-  return columns
-    .map((value, index, arr) => {
-      return `${tableName}.${value}`;
-    })
-    .join(', ');
+const mapColumns = (tableName: string, columns: string[]) => {
+  return columns.map((value, index, arr) => `${tableName}.${value}`).join(', ');
 };
 
-function recursionQueryTreeSql(id, columns) {
+function queryTreeSql(id: string, columns: string[]) {
   return `
         WITH RECURSIVE CommonTable AS (
             SELECT ${mapColumns('member', columns)} FROM member WHERE member.id = ${id}
             UNION ALL
             SELECT ${mapColumns('m', columns)} FROM member m INNER JOIN CommonTable ct ON m.parentId = ct.id
         )
-        SELECT * FROM (SELECT
-                CASE
-                    WHEN id = ${id} THEN -1
-                    ELSE parentId
-                END AS parentId,
-                ${mapColumns(
-                  'CommonTable',
-                  columns.filter((c) => c !== 'parentId'),
-                )}
+        SELECT
+          *
+        FROM (
+          SELECT
+            CASE
+              WHEN id = ${id} THEN -1
+              ELSE parentId
+            END AS parentId,
+            ${mapColumns(
+              'CommonTable',
+              columns.filter((c) => c !== 'parentId'),
+            )}
             FROM
-                CommonTable);
+            CommonTable
+        );
     `;
 }
 
-function recursionUpdateTreeGeneration(id, diff) {
+function updateTreeLayer(id: string, diff: string) {
   return `
         WITH RECURSIVE CommonTable AS (
             SELECT member.id FROM member WHERE member.id = ${id}
@@ -49,7 +49,7 @@ function recursionUpdateTreeGeneration(id, diff) {
 async function queryMemberTree(body) {
   const { rootId } = body;
   const repository = appDataSource.getRepository(Member);
-  const columns = [
+  const columns: (keyof Member)[] = [
     'id',
     'name',
     'parentId',
@@ -59,7 +59,7 @@ async function queryMemberTree(body) {
     'generation',
   ];
   if (rootId) {
-    return await repository.query(recursionQueryTreeSql(rootId, columns));
+    return await repository.query(queryTreeSql(rootId, columns));
   }
   return await repository.find({ select: columns });
 }
@@ -79,9 +79,9 @@ async function queryMember(body) {
   const searchParams = body.params || {};
   const sortParams = body.sort || {};
 
-  const where = {};
+  const where: FindOptionsWhere<Member> = {};
 
-  const order = {};
+  const order: FindOptionsOrder<Member> = {};
 
   const repository = appDataSource.getRepository(Member);
 
@@ -135,7 +135,7 @@ async function addMember(body) {
       const parent = await repository.findOneBy({ id: body.parentId });
       if (!parent) throw new Error('父级错误');
       member.parentId = body.parentId;
-      member.generation = parent.generation + 1;
+      member.generation = parent.generation! + 1;
     } else {
       member.generation = 1;
       member.parentId = -1;
@@ -169,18 +169,16 @@ async function updateMember(body) {
   await appDataSource.transaction(async (transactionalEntityManager) => {
     const repository = transactionalEntityManager.getRepository(Member);
 
-    const originMember = await repository.findOneBy({ id: body.id });
-    const originParent = await repository.findOneBy({
-      id: originMember.parentId,
-    });
+    const memberData = await repository.findOneBy({ id: body.id });
+    if (!memberData) throw new Error('不存在');
+    const parentData = await repository.findOneBy({ id: memberData.parentId });
+    if (!parentData) throw new Error('不存在');
     const newParent = await repository.findOneBy({ id: body.parentId });
+    if (!newParent) throw new Error('不存在');
 
-    if ([originMember, originParent, newParent].includes(null))
-      throw new Error('不存在');
+    const diff = newParent.generation! - parentData.generation!;
 
-    const diff = newParent.generation - originParent.generation;
-
-    await repository.query(recursionUpdateTreeGeneration(id, diff));
+    await repository.query(updateTreeLayer(body.id, String(diff)));
 
     await repository.save(member);
   });
