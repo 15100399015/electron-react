@@ -176,9 +176,13 @@ const configuration: webpack.Configuration = {
     headers: { 'Access-Control-Allow-Origin': '*' },
     static: {
       publicPath: '/',
+      directory: path.join(webpackPaths.rootPath, 'public'),
     },
     historyApiFallback: {
       verbose: true,
+    },
+    devMiddleware: {
+      writeToDisk: true,
     },
     setupMiddlewares(middlewares) {
       console.log('Starting preload.js builder...');

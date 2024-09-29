@@ -1,5 +1,14 @@
 import { DisplayObject } from '@antv/g-lite';
-import { Badge, ExtensionCategory, Graph, Label, Rect, RectStyleProps, register } from '@antv/g6';
+import {
+  Badge,
+  ExtensionCategory,
+  Graph,
+  IconStyleProps,
+  Label,
+  Rect,
+  RectStyleProps,
+  register,
+} from '@antv/g6';
 
 /**
  * Draw a chart node with different ui based on the zoom level.
@@ -7,6 +16,17 @@ import { Badge, ExtensionCategory, Graph, Label, Rect, RectStyleProps, register 
 class ChartNode extends Rect {
   get data(): any {
     return this.context.model.getElementDataById(this.id).data;
+  }
+
+  protected getIconStyle(
+    attributes: Required<RectStyleProps>,
+  ): false | IconStyleProps {
+    return {
+      ...attributes,
+      width: 40,
+      height: 40,
+      transform: 'translate(0, 0)',
+    };
   }
 
   getLabelStyle() {
@@ -68,6 +88,51 @@ class ChartNode extends Rect {
 
 register(ExtensionCategory.NODE, 'chart-node', ChartNode);
 
+const lightColors = [
+  '#8FE9FF',
+  '#87EAEF',
+  '#FFC9E3',
+  '#A7C2FF',
+  '#FFA1E3',
+  '#FFE269',
+  '#BFCFEE',
+  '#FFA0C5',
+  '#D5FF86',
+];
+const darkColors = [
+  '#7DA8FF',
+  '#44E6C1',
+  '#FF68A7',
+  '#7F86FF',
+  '#AE6CFF',
+  '#FF5A34',
+  '#5D7092',
+  '#FF6565',
+  '#6BFFDE',
+];
+const uLightColors = [
+  '#CFF6FF',
+  '#BCFCFF',
+  '#FFECF5',
+  '#ECFBFF',
+  '#EAD9FF',
+  '#FFF8DA',
+  '#DCE2EE',
+  '#FFE7F0',
+  '#EEFFCE',
+];
+const uDarkColors = [
+  '#CADBFF',
+  '#A9FFEB',
+  '#FFC4DD',
+  '#CACDFF',
+  '#FFD4F2',
+  '#FFD3C9',
+  '#EBF2FF',
+  '#FFCBCB',
+  '#CAFFF3',
+];
+
 export function drawChart(dom: HTMLDivElement, data: any) {
   const graph = new Graph({
     container: dom,
@@ -78,24 +143,28 @@ export function drawChart(dom: HTMLDivElement, data: any) {
       type: 'chart-node',
       style: {
         labelPlacement: 'center',
-        lineWidth: 1,
         ports: [{ placement: 'top' }, { placement: 'bottom' }],
-        radius: 2,
-        shadowBlur: 10,
-        shadowColor: '#e0e0e0',
-        shadowOffsetX: 3,
+        radius: 5,
         size: [100, 60],
-        stroke: '#C0C0C0',
-        fill: '#ffffff',
+        fill: 'l(45) 0:#8FE9FF 1:#7DA8FF',
+        lineWidth: 1,
+        stroke: 'l(45) 0:#CADBFF 1:#CFF6FF',
+        icon: true,
+        iconSrc:
+          'https://gw.alipayobjects.com/zos/basement_prod/012bcf4f-423b-4922-8c24-32a89f8c41ce.svg',
       },
     },
     edge: {
       type: 'polyline',
       style: {
-        router: {
-          type: 'orth',
-        },
-        stroke: '#C0C0C0',
+        router: { type: 'orth' },
+        endArrow: true,
+        endArrowType: 'vee',
+        endArrowSize: 5,
+        endArrowStroke: '#44E6C1',
+        radius: 5,
+        lineWidth: 2,
+        stroke: 'l(90) 0:#ffffff 1:#44E6C1',
       },
     },
     layout: {
@@ -112,6 +181,16 @@ export function drawChart(dom: HTMLDivElement, data: any) {
       {
         type: 'drag-canvas',
         range: Infinity,
+      },
+    ],
+    plugins: [
+      {
+        type: 'watermark',
+        width: 200,
+        height: 100,
+        opacity: 0.05,
+        rotate: Math.PI / 12,
+        text: '楊氏家谱',
       },
     ],
   });
