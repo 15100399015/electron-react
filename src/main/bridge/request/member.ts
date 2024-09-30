@@ -69,6 +69,7 @@ async function queryMemberDataScreen(body) {
     total,
     generationTotal: generationGroup.length,
     avgOffspringNum: Array.isArray(result) ? result[0].num : 0,
+    // 包含每个世代的平均生育数量
     generationGroup: generationGroup.map((item, i, arr) => {
       const { member_count, generation } = item;
       const nextItem = arr[i + 1];

@@ -5,6 +5,7 @@ import { drawChart } from './draw';
 import { PageContainer, ProCard } from '@ant-design/pro-components';
 import { Button, Divider, List, Statistic, Typography } from 'antd';
 import RcResizeObserver from 'rc-resize-observer';
+import Column from './chart/column';
 
 function formatData(data: any[]) {
   const nodes = data
@@ -39,17 +40,18 @@ function formatData(data: any[]) {
 
 const Welcome: React.FC = () => {
   const divRef = React.useRef<HTMLDivElement>(null);
-  useEffectOnce(() => {
-    if (divRef.current) {
-      let instance: any = null;
-      Api.queryMemberTree().then((data) => {
-        instance = drawChart(divRef.current!, formatData(data));
-      });
-      return () => {
-        instance?.destroy();
-      };
-    }
-  });
+
+  // useEffectOnce(() => {
+  //   if (divRef.current) {
+  //     let instance: any = null;
+  //     Api.queryMemberTree().then((data) => {
+  //       instance = drawChart(divRef.current!, formatData(data));
+  //     });
+  //     return () => {
+  //       instance?.destroy();
+  //     };
+  //   }
+  // });
 
   const [data, setData] = useState({});
 
@@ -99,9 +101,6 @@ const Welcome: React.FC = () => {
                     suffix="人"
                   />
                 </ProCard>
-                <ProCard>
-                  <Statistic title="冻结金额" value={112893.0} />
-                </ProCard>
               </ProCard>
               <ProCard title="世代信息 饼图">
                 <List
@@ -116,7 +115,9 @@ const Welcome: React.FC = () => {
                 />
               </ProCard>
             </ProCard>
-            <ProCard title="生育趋势">柱状图</ProCard>
+            <ProCard title="生育趋势">
+              <Column data={data?.generationGroup}></Column>
+            </ProCard>
           </ProCard>
           <ProCard title="图谱" headerBordered extra="sssss">
             <div ref={divRef} style={{ width: '100%', height: '100vh' }}></div>
