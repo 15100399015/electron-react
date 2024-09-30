@@ -93,6 +93,11 @@ const TableList: React.FC = () => {
   }
   const columns: ProColumns<API.MemberListItem>[] = [
     {
+      title: 'id',
+      dataIndex: 'id',
+      search: false,
+    },
+    {
       title: '名',
       dataIndex: 'name',
       render: (name, record) => {

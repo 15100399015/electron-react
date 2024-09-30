@@ -1,6 +1,7 @@
 import { createHashRouter } from 'react-router-dom';
 
 import Layout from '../layout';
+import PageNotFound from '../layout/PageNotFound';
 import MemberDetail from '../pages/MemberDetail';
 import MemberList from '../pages/MemberList';
 import Pedigree from '../pages/Pedigree';
@@ -22,6 +23,10 @@ const router = createHashRouter([
         Component: MemberDetail,
       },
     ],
+  },
+  {
+    path: '/*',
+    Component: PageNotFound,
   },
 ]);
 

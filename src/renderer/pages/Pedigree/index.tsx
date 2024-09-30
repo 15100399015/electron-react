@@ -1,30 +1,29 @@
 import { Api } from '../../services';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useEffectOnce } from 'react-use';
-import { drawChart } from './draw';
-import { PageContainer, ProCard } from '@ant-design/pro-components';
-import { Button, Divider, List, Statistic, Typography } from 'antd';
+import { BloodlineGraph } from './graph';
+import {
+  PageContainer,
+  ProCard,
+  ProFormSelect,
+} from '@ant-design/pro-components';
+import { Button, Input, List, Space, Statistic, Typography } from 'antd';
 import RcResizeObserver from 'rc-resize-observer';
-import Column from './chart/column';
+import { Graph, GraphData } from '@antv/g6';
+import { queryMembers } from '../../services/api';
 
-function formatData(data: any[]) {
-  const nodes = data
+Input.Group;
+
+function formatData(data: any[]): GraphData {
+  const nodes: GraphData['nodes'] = data
     .map((node) => {
       return {
         id: String(node.id),
-        data: {
-          ...node,
-          email: 'rking@yoyodyne.com',
-          fax: '555-0145',
-          name: node.name,
-          phone: '555-0144',
-          position: 'Chief Operating Officer',
-          status: 'online',
-        },
+        data: { ...node },
       };
     })
-    .filter(Boolean);
-  const edges = data
+    .filter((item) => !!item);
+  const edges: GraphData['edges'] = data
     .map((node) => {
       if (node.parentId === -1) {
         return null;
@@ -34,24 +33,23 @@ function formatData(data: any[]) {
         target: String(node.id),
       };
     })
-    .filter(Boolean);
+    .filter((item) => !!item);
   return { nodes, edges };
 }
+const selectMembers = (name: string) =>
+  queryMembers({ name: name, current: 1, pageSize: 10 }, {});
 
 const Welcome: React.FC = () => {
-  const divRef = React.useRef<HTMLDivElement>(null);
+  const graphRef = useRef<{ graph?: Graph }>(null);
+  const [graphData, setGraphData] = useState<any>(null);
 
-  // useEffectOnce(() => {
-  //   if (divRef.current) {
-  //     let instance: any = null;
-  //     Api.queryMemberTree().then((data) => {
-  //       instance = drawChart(divRef.current!, formatData(data));
-  //     });
-  //     return () => {
-  //       instance?.destroy();
-  //     };
-  //   }
-  // });
+  const [focusId, setFocusId] = useState<number>();
+
+  useEffectOnce(() => {
+    Api.queryMemberTree().then((data) => {
+      setGraphData(formatData(data));
+    });
+  });
 
   const [data, setData] = useState({});
 
@@ -102,7 +100,7 @@ const Welcome: React.FC = () => {
                   />
                 </ProCard>
               </ProCard>
-              <ProCard title="世代信息 饼图">
+              <ProCard title="世代信息">
                 <List
                   size="small"
                   dataSource={data?.generationGroup || []}
@@ -116,11 +114,45 @@ const Welcome: React.FC = () => {
               </ProCard>
             </ProCard>
             <ProCard title="生育趋势">
-              <Column data={data?.generationGroup}></Column>
+              {/* <Column data={data?.generationGroup}></Column> */}
             </ProCard>
           </ProCard>
-          <ProCard title="图谱" headerBordered extra="sssss">
-            <div ref={divRef} style={{ width: '100%', height: '100vh' }}></div>
+          <ProCard
+            title="图谱"
+            headerBordered
+            extra={
+              <Space.Compact>
+                <ProFormSelect
+                  showSearch
+                  onChange={setFocusId}
+                  request={async (params) => {
+                    const res = await selectMembers(params.keyWords);
+                    if (res.total) {
+                      return res.data.map((member) => ({
+                        value: member.id,
+                        label: member.name,
+                      }));
+                    } else {
+                      return [];
+                    }
+                  }}
+                  name={'name'}
+                  style={{ width: 200 }}
+                />
+                <Button
+                  type="primary"
+                  onClick={() => {
+                    if (focusId) {
+                      graphRef.current?.graph?.focusElement(String(focusId));
+                    }
+                  }}
+                >
+                  聚焦
+                </Button>
+              </Space.Compact>
+            }
+          >
+            <BloodlineGraph ref={graphRef} data={graphData}></BloodlineGraph>
           </ProCard>
         </ProCard>
       </RcResizeObserver>
