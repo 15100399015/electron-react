@@ -1,7 +1,6 @@
 import { DisplayObject } from '@antv/g-lite';
 import { useImperativeHandle, useState } from 'react';
 import {
-  Badge,
   ExtensionCategory,
   Fullscreen,
   Graph,
@@ -9,13 +8,13 @@ import {
   Label,
   LabelStyleProps,
   NodeData,
-  NodeEvent,
   Rect,
   register,
 } from '@antv/g6';
 import React, { useEffect, useRef } from 'react';
 import { useEffectOnce } from 'react-use';
 import { useNavigate } from 'react-router-dom';
+import { renderToString } from 'react-dom/server';
 
 /**
  * 自定义节点
@@ -37,9 +36,8 @@ class ChartNode extends Rect {
     };
   }
 
-  getPositionStyle(): DisplayObject['attributes'] {
+  getSpouseSurnameStyle(): DisplayObject['attributes'] {
     const text = `${this.data.spouseSurname || '*'}氏`;
-
     return {
       text: text,
       fontSize: 8,
@@ -50,7 +48,7 @@ class ChartNode extends Rect {
     };
   }
 
-  getStatusStyle(): DisplayObject['attributes'] {
+  getGenerationStyle(): DisplayObject['attributes'] {
     const text = `${this.data.generation}世代`;
     return {
       text: text,
@@ -65,11 +63,11 @@ class ChartNode extends Rect {
   render(attributes = this.parsedAttributes, container = this) {
     super.render(attributes, container);
 
-    const positionStyle = this.getPositionStyle();
-    this.upsert('position', Label, positionStyle, container);
+    const spouseSurnameStyle = this.getSpouseSurnameStyle();
+    this.upsert('spouseSurname', Label, spouseSurnameStyle, container);
 
-    const statusStyle = this.getStatusStyle();
-    this.upsert('status', Badge, statusStyle, container);
+    const generationStyle = this.getGenerationStyle();
+    this.upsert('generation', Label, generationStyle, container);
   }
 }
 
@@ -160,16 +158,18 @@ export const BloodlineGraph = React.forwardRef<
         type: 'chart-node',
         style(data) {
           // 0 3 6
-          const strokeColor = ugColors[0];
+          const index = 6;
+          const fillColor = `l(45) 0:${uLightColors[index]} 1:${uDarkColors[index]}`;
+          const strokeColor = `l(45) 0:${uDarkColors[index]} 1:${uLightColors[index]}`;
           return {
             cursor: 'pointer',
             labelPlacement: 'center',
-            // ports: [{ placement: 'top' }, { placement: 'bottom' }],
+            ports: [{ placement: 'top' }, { placement: 'bottom' }],
             radius: 5,
             size: [100, 60],
-            fill: strokeColor,
+            fill: fillColor,
             lineWidth: 1,
-            stroke: 'l(45) 0:#CADBFF 1:#CFF6FF',
+            stroke: strokeColor,
           };
         },
       },
@@ -216,9 +216,18 @@ export const BloodlineGraph = React.forwardRef<
             key: 'tooltip',
             trigger: 'hover',
             enable: (e: IElementEvent) => e.targetType === 'node',
-            position: 'right',
             enterable: false,
-            getContent: (event: IElementEvent, items: NodeData) => 'adas',
+            getContent: (event: IElementEvent, items: NodeData[]) => {
+              const data = items[0]?.data || {};
+              return renderToString(
+                <div>
+                  <div>姓名: {data.name}</div>
+                  <div>别名: {data.adivas}</div>
+                  <div>出生日期: {data.birthday}</div>
+                  <div>逝世日期: {data.deathday}</div>
+                </div>,
+              );
+            },
           };
         },
         function () {
