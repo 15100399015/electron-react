@@ -1,6 +1,6 @@
-import UpdateForm, { FormValueType } from '../../components/UpdateForm';
+import { UpdateForm, FormValueType } from '../../components/UpdateForm';
 import { Api } from '../../services';
-import { PageContainer } from '@ant-design/pro-components';
+import { PageContainer, ProCard } from '@ant-design/pro-components';
 import { Button, Descriptions, message, Space, Statistic } from 'antd';
 import type { FC } from 'react';
 import { useMemo, useState } from 'react';
@@ -19,9 +19,9 @@ const requestUpdate = async (fields: FormValueType) => {
   }
 };
 
-const Advanced: FC = () => {
+export const MemberDetail: FC = () => {
   const params = useParams();
-  const [data, setData] = useState<API.MemberListItem | null>();
+  const [data, setData] = useState<API.DataModel.Member | null>();
 
   const [modalOpen, handleModalOpen] = useState<boolean>(false);
 
@@ -62,28 +62,34 @@ const Advanced: FC = () => {
     <div
       style={{
         display: 'flex',
-        justifyContent: 'flex-start',
+        justifyContent: 'flex-end',
       }}
     >
-      <Statistic title={ageInfo.title} value={ageInfo.age} suffix="岁" />
+      <Statistic title={ageInfo.title} value={ageInfo.age} />
     </div>
   );
   const description = (
-    <Descriptions column={4}>
-      <Descriptions.Item label="名">{data?.name}</Descriptions.Item>
-      <Descriptions.Item label="别名">{data?.alias}</Descriptions.Item>
-      <Descriptions.Item label="配偶姓氏">
-        {data?.spouseSurname}
-      </Descriptions.Item>
-      <Descriptions.Item label="职业">{data?.career}</Descriptions.Item>
-      <Descriptions.Item label="职位">{data?.position}</Descriptions.Item>
-      <Descriptions.Item label="地址">{data?.address}</Descriptions.Item>
-      <Descriptions.Item label="出生地">{data?.birthPlace}</Descriptions.Item>
-      <Descriptions.Item label="去世地">{data?.deathPlace}</Descriptions.Item>
-      <Descriptions.Item label="出生日期">{data?.birthDate}</Descriptions.Item>
-      <Descriptions.Item label="去世日期">{data?.deathDate}</Descriptions.Item>
-      <Descriptions.Item label="备注">{data?.description}</Descriptions.Item>
-    </Descriptions>
+    <ProCard bordered>
+      <Descriptions column={4}>
+        <Descriptions.Item label="名">{data?.name}</Descriptions.Item>
+        <Descriptions.Item label="别名">{data?.alias}</Descriptions.Item>
+        <Descriptions.Item label="配偶姓氏">
+          {data?.spouseSurname}
+        </Descriptions.Item>
+        <Descriptions.Item label="职业">{data?.career}</Descriptions.Item>
+        <Descriptions.Item label="职位">{data?.position}</Descriptions.Item>
+        <Descriptions.Item label="地址">{data?.address}</Descriptions.Item>
+        <Descriptions.Item label="出生地">{data?.birthPlace}</Descriptions.Item>
+        <Descriptions.Item label="去世地">{data?.deathPlace}</Descriptions.Item>
+        <Descriptions.Item label="出生日期">
+          {data?.birthDate}
+        </Descriptions.Item>
+        <Descriptions.Item label="去世日期">
+          {data?.deathDate}
+        </Descriptions.Item>
+        <Descriptions.Item label="备注">{data?.description}</Descriptions.Item>
+      </Descriptions>
+    </ProCard>
   );
 
   const action = (
@@ -105,8 +111,20 @@ const Advanced: FC = () => {
       extra={action}
       content={description}
       extraContent={extra}
-      fixedHeader
+      style={{
+        backgroundColor: '#ffffff',
+      }}
       childrenContentStyle={{ padding: 0 }}
+      tabList={[
+        {
+          tab: '已选择',
+          key: '1',
+        },
+        {
+          tab: '可点击',
+          key: '2',
+        },
+      ]}
     >
       <UpdateForm
         onSubmit={handleFormSubmit}
@@ -118,4 +136,3 @@ const Advanced: FC = () => {
     </PageContainer>
   );
 };
-export default Advanced;

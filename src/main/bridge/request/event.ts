@@ -2,7 +2,9 @@ import { appDataSource } from '../../database/index';
 import { Event } from '../../database/model/Event';
 
 // 获取所有成员列表
-async function getEvents(body) {
+async function getEvents(
+  body: API.RequestBody.getEvents,
+): Promise<API.ResponseBody.getEvents> {
   const { memberId } = body;
   const events = await appDataSource
     .getRepository(Event)
@@ -13,7 +15,9 @@ async function getEvents(body) {
 }
 
 // 添加成员信息
-async function addEvent(body) {
+async function addEvent(
+  body: API.RequestBody.addEvent,
+): Promise<API.ResponseBody.addEvent> {
   const evnet = new Event();
 
   evnet.memberId = body.memberId;
@@ -27,7 +31,9 @@ async function addEvent(body) {
 }
 
 // 更新成员信息
-async function updateEvent(body) {
+async function updateEvent(
+  body: API.RequestBody.updateEvent,
+): Promise<API.ResponseBody.updateEvent> {
   const evnet = new Event();
 
   evnet.id = body.id;
@@ -41,7 +47,9 @@ async function updateEvent(body) {
 }
 
 // 删除成员信息
-async function removeEvent(body) {
+async function removeEvent(
+  body: API.RequestBody.removeEvent,
+): Promise<API.ResponseBody.removeEvent> {
   const { id } = body;
 
   await appDataSource.getRepository(Event).delete(id);

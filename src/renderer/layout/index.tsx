@@ -1,11 +1,7 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { ProLayout } from '@ant-design/pro-components';
-import {
-  ApartmentOutlined,
-  BarsOutlined,
-  SmileFilled,
-} from '@ant-design/icons';
-function Layout() {
+import { ApartmentOutlined, BarsOutlined } from '@ant-design/icons';
+export function Layout() {
   const location = useLocation();
 
   return (
@@ -19,7 +15,7 @@ function Layout() {
         routes: [
           {
             path: '/',
-            name: '世系图',
+            name: '数据看板',
             icon: <ApartmentOutlined />,
           },
           {
@@ -38,5 +34,3 @@ function Layout() {
     </ProLayout>
   );
 }
-
-export default Layout;

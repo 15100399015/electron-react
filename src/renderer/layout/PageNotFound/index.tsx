@@ -2,7 +2,7 @@ import React from 'react';
 import { Button, Result } from 'antd';
 import { useNavigate } from 'react-router-dom';
 
-const PageNotFound: React.FC = () => {
+export const PageNotFound: React.FC = () => {
   const navigate = useNavigate();
   return (
     <Result
@@ -22,4 +22,3 @@ const PageNotFound: React.FC = () => {
     />
   );
 };
-export default PageNotFound;

@@ -4,6 +4,7 @@ import {
   ExtensionCategory,
   Fullscreen,
   Graph,
+  GraphData,
   IElementEvent,
   Label,
   LabelStyleProps,
@@ -15,6 +16,7 @@ import React, { useEffect, useRef } from 'react';
 import { useEffectOnce } from 'react-use';
 import { useNavigate } from 'react-router-dom';
 import { renderToString } from 'react-dom/server';
+import { Api } from '../../services';
 
 /**
  * 自定义节点
@@ -127,8 +129,32 @@ uLightColors.forEach((color, i) => {
   ugColors.push('l(45) 0:' + color + ' 1:' + uDarkColors[i]);
 });
 
+// 格式化数据
+function formatData(data: API.MemberListItem[]): GraphData {
+  const nodes: GraphData['nodes'] = data
+    .map((node) => {
+      return {
+        id: String(node.id),
+        data: { ...node },
+      };
+    })
+    .filter((item) => !!item);
+  const edges: GraphData['edges'] = data
+    .map((node) => {
+      if (node.parentId === -1) {
+        return null;
+      }
+      return {
+        source: String(node.parentId),
+        target: String(node.id),
+      };
+    })
+    .filter((item) => !!item);
+  return { nodes, edges };
+}
+
 interface BloodlineGraphProps {
-  data: any;
+  rootId?: number;
 }
 
 export const BloodlineGraph = React.forwardRef<
@@ -138,6 +164,18 @@ export const BloodlineGraph = React.forwardRef<
   const container = useRef<HTMLDivElement>(null);
   const [graphInstance, setGraphInstance] = useState<Graph>();
   const navigate = useNavigate();
+
+  const [data, setData] = useState<GraphData>({ nodes: [], edges: [] });
+
+  function fetchData() {
+    Api.queryMemberTree(props.rootId).then((data) => {
+      setData(formatData(data));
+    });
+  }
+
+  useEffectOnce(() => {
+    fetchData();
+  });
 
   useImperativeHandle(ref, () => {
     return {
@@ -218,7 +256,8 @@ export const BloodlineGraph = React.forwardRef<
             enable: (e: IElementEvent) => e.targetType === 'node',
             enterable: false,
             getContent: (event: IElementEvent, items: NodeData[]) => {
-              const data = items[0]?.data || {};
+              const data = (items[0]?.data || {}) as API.MemberListItem;
+              if (!data) return '';
               return renderToString(
                 <div>
                   <div>别名: {data.alias}</div>
@@ -281,27 +320,23 @@ export const BloodlineGraph = React.forwardRef<
     });
     setGraphInstance(graph);
 
+    graph.on('node:click', (event) => {
+      console.log(event.type);
+      const { target } = event;
+      navigate(`/member/detail/${target.id}`);
+    });
+
     return () => {
       graph.destroy();
     };
   });
 
   useEffect(() => {
-    if (props.data && graphInstance) {
-      graphInstance.setData(props.data);
+    if (data && graphInstance) {
+      graphInstance.setData(data);
       graphInstance.render();
     }
-  }, [props.data, graphInstance]);
-
-  useEffect(() => {
-    if (graphInstance) {
-      graphInstance.on('node:click', (event) => {
-        console.log(event.type);
-        const { target } = event;
-        navigate(`/member/detail/${target.id}`);
-      });
-    }
-  }, [graphInstance]);
+  }, [props, graphInstance]);
 
   return <div ref={container} style={{ width: '100%', height: '80vh' }}></div>;
 });

@@ -1,5 +1,5 @@
 import type { FormValueType } from '../../components/UpdateForm';
-import UpdateForm from '../../components/UpdateForm';
+import { UpdateForm } from '../../components/UpdateForm';
 import { Api } from '../../services';
 import { PlusOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
@@ -8,11 +8,11 @@ import {
   PageContainer,
   ProTable,
 } from '@ant-design/pro-components';
-import { Button, message } from 'antd';
+import { Button, message, Popconfirm } from 'antd';
 import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const requestAdd = async (fields: Partial<API.MemberListItem>) => {
+const requestAdd = async (fields: Partial<API.DataModel.Member>) => {
   try {
     await Api.addMember({ ...fields });
     message.success('添加成功');
@@ -34,10 +34,10 @@ const requestUpdate = async (fields: FormValueType) => {
   }
 };
 
-const requestRemove = async (selectedRows: API.MemberListItem[]) => {
+const requestRemove = async (selectedRows: API.DataModel.Member[]) => {
   if (!selectedRows) return true;
   try {
-    await Api.removeMember(selectedRows.map((row) => row.id));
+    await Api.removeMember(selectedRows.map((row) => row.id!));
     message.success('删除成功');
     return true;
   } catch (error) {
@@ -46,26 +46,26 @@ const requestRemove = async (selectedRows: API.MemberListItem[]) => {
   }
 };
 
-const TableList: React.FC = () => {
+export const MemberList: React.FC = () => {
   const navigate = useNavigate();
 
   const actionRef = useRef<ActionType>();
   const [modalOpen, handleModalOpen] = useState<boolean>(false);
-  const [currentRow, setCurrentRow] = useState<API.MemberListItem>();
-  const [selectedRowsState, setSelectedRows] = useState<API.MemberListItem[]>(
+  const [currentRow, setCurrentRow] = useState<API.DataModel.Member>();
+  const [selectedRowsState, setSelectedRows] = useState<API.DataModel.Member[]>(
     [],
   );
 
-  async function handleGoDetailPage(record: API.MemberListItem) {
+  async function handleGoDetailPage(record: API.DataModel.Member) {
     navigate(`/member/detail/${record.id}`);
   }
 
-  async function handleEdit(record: API.MemberListItem) {
+  async function handleEdit(record: API.DataModel.Member) {
     handleModalOpen(true);
     setCurrentRow(record);
   }
 
-  async function handleDelete(record: API.MemberListItem) {
+  async function handleDelete(record: API.DataModel.Member) {
     await requestRemove([record]);
     actionRef.current?.reloadAndRest?.();
   }
@@ -91,7 +91,7 @@ const TableList: React.FC = () => {
     handleModalOpen(false);
     setCurrentRow(undefined);
   }
-  const columns: ProColumns<API.MemberListItem>[] = [
+  const columns: ProColumns<API.DataModel.Member>[] = [
     {
       title: 'id',
       dataIndex: 'id',
@@ -130,6 +130,7 @@ const TableList: React.FC = () => {
       title: '入录时间',
       dataIndex: 'createTime',
       valueType: 'dateTime',
+      search: false,
     },
     {
       title: '操作',
@@ -139,15 +140,21 @@ const TableList: React.FC = () => {
         <a key="edit" onClick={() => handleEdit(record)}>
           编辑
         </a>,
-        <a key="delete" onClick={() => handleDelete(record)}>
-          删除
-        </a>,
+        <Popconfirm
+          title="确定删除吗"
+          description="删除后不可找回"
+          onConfirm={() => {
+            handleDelete(record);
+          }}
+        >
+          <a key="delete">删除</a>
+        </Popconfirm>,
       ],
     },
   ];
   return (
-    <PageContainer title={false} childrenContentStyle={{ padding: 0 }}>
-      <ProTable<API.MemberListItem, API.PageParams>
+    <PageContainer childrenContentStyle={{ padding: 0 }}>
+      <ProTable<API.DataModel.Member, API.RequestBody.queryMember>
         cardBordered
         actionRef={actionRef}
         rowKey="id"
@@ -172,10 +179,19 @@ const TableList: React.FC = () => {
             <PlusOutlined /> 创建
           </Button>,
         ]}
-        request={Api.queryMembers}
+        request={(params, sort) => {
+          return Api.queryMembers(
+            {
+              ...params,
+              current: params.current || 1,
+              pageSize: params.pageSize || 10,
+            },
+            sort,
+          );
+        }}
         columns={columns}
         rowSelection={{
-          selectedRowKeys: selectedRowsState.map((item) => item.id),
+          selectedRowKeys: selectedRowsState.map((item) => item.id!),
           onChange: (_, selectedRows) => setSelectedRows(selectedRows),
         }}
       />
@@ -200,5 +216,3 @@ const TableList: React.FC = () => {
     </PageContainer>
   );
 };
-
-export default TableList;

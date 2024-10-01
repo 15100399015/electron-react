@@ -3,13 +3,16 @@ import { Like, In, FindOptionsWhere, FindOptionsOrder } from 'typeorm';
 import { Member } from '../../database/model/Member';
 import { Event } from '../../database/model/Event';
 
-const orderMap = { ascend: 'ASC', descend: 'DESC' };
+const orderMap: Record<string, 'ASC' | 'DESC'> = {
+  ascend: 'ASC',
+  descend: 'DESC',
+};
 
 const mapColumns = (tableName: string, columns: string[]) => {
   return columns.map((value, index, arr) => `${tableName}.${value}`).join(', ');
 };
 
-function queryTreeSql(id: string, columns: string[]) {
+function queryTreeSql(id: number, columns: string[]) {
   return `
         WITH RECURSIVE CommonTable AS (
             SELECT ${mapColumns('member', columns)} FROM member WHERE member.id = ${id}
@@ -34,7 +37,7 @@ function queryTreeSql(id: string, columns: string[]) {
     `;
 }
 
-function updateTreeLayer(id: string, diff: string) {
+function updateTreeLayer(id: number, diff: string) {
   return `
         WITH RECURSIVE CommonTable AS (
             SELECT member.id FROM member WHERE member.id = ${id}
@@ -45,7 +48,7 @@ function updateTreeLayer(id: string, diff: string) {
     `;
 }
 
-async function queryMemberDataScreen(body) {
+async function queryPinboardData(): Promise<API.ResponseBody.queryPinboardData> {
   const repository = appDataSource.getRepository(Member);
 
   // 根据世代分组
@@ -69,7 +72,6 @@ async function queryMemberDataScreen(body) {
     total,
     generationTotal: generationGroup.length,
     avgOffspringNum: Array.isArray(result) ? result[0].num : 0,
-    // 包含每个世代的平均生育数量
     generationGroup: generationGroup.map((item, i, arr) => {
       const { member_count, generation } = item;
       const nextItem = arr[i + 1];
@@ -83,7 +85,9 @@ async function queryMemberDataScreen(body) {
 }
 
 // 获取所有成员列表
-async function queryMemberTree(body) {
+async function queryMemberTree(
+  body: API.RequestBody.queryMemberTree,
+): Promise<API.ResponseBody.queryMemberTree> {
   const { rootId } = body;
   const repository = appDataSource.getRepository(Member);
   const columns: (keyof Member)[] = [
@@ -102,7 +106,7 @@ async function queryMemberTree(body) {
 }
 
 // 获取某个成员
-async function queryMemberById(body) {
+async function queryMemberById(body: API.RequestBody.queryMemberById) {
   const { id } = body;
   const member = await appDataSource
     .getRepository(Member)
@@ -112,7 +116,9 @@ async function queryMemberById(body) {
 }
 
 // 分页查询成员信息
-async function queryMember(body) {
+async function queryMember(
+  body: API.RequestBody.queryMember,
+): Promise<API.ResponseBody.queryMember> {
   const searchParams = body.params || {};
   const sortParams = body.sort || {};
 
@@ -132,7 +138,7 @@ async function queryMember(body) {
   if (searchParams.address)
     where['address'] = Like(`%${searchParams.address}%`);
 
-  if (orderMap[sortParams.birthDate])
+  if (sortParams.birthDate && orderMap[sortParams.birthDate])
     order['birthDate'] = orderMap[sortParams.birthDate];
 
   const [members, count] = await repository.findAndCount({
@@ -149,7 +155,9 @@ async function queryMember(body) {
 }
 
 // 添加成员信息
-async function addMember(body) {
+async function addMember(
+  body: API.RequestBody.addMember,
+): Promise<API.ResponseBody.addMember> {
   const member = new Member();
 
   member.name = body.name;
@@ -185,7 +193,9 @@ async function addMember(body) {
 }
 
 // 更新成员信息
-async function updateMember(body) {
+async function updateMember(
+  body: API.RequestBody.updateMember,
+): Promise<API.ResponseBody.updateMember> {
   const member = new Member();
 
   member.id = body.id;
@@ -215,7 +225,7 @@ async function updateMember(body) {
 
     const diff = newParent.generation! - parentData.generation!;
 
-    await repository.query(updateTreeLayer(body.id, String(diff)));
+    await repository.query(updateTreeLayer(body.id as number, String(diff)));
 
     await repository.save(member);
   });
@@ -224,7 +234,9 @@ async function updateMember(body) {
 }
 
 // 删除成员信息
-async function removeMember(body) {
+async function removeMember(
+  body: API.RequestBody.removeMember,
+): Promise<API.ResponseBody.removeMember> {
   const { ids = [] } = body;
 
   await appDataSource.transaction(async (transactionalEntityManager) => {
@@ -246,7 +258,7 @@ async function removeMember(body) {
 }
 
 export const member = {
-  '/member/dataScreen': queryMemberDataScreen,
+  '/member/pinboardData': queryPinboardData,
   '/member/queryTree': queryMemberTree,
   '/member/queryById': queryMemberById,
   '/member/add': addMember,

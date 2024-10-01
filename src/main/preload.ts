@@ -1,7 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
 export interface Bridge {
-  request: <T>(path: string, body: any) => Promise<T>;
+  request: <T, E>(path: string, body: T) => Promise<E>;
 }
 
 const bridgeConfig: Bridge = {

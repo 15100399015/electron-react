@@ -19,9 +19,10 @@ export type UpdateFormProps = {
   values: Partial<API.MemberListItem>;
 };
 
-const selectMembers = (name: string) => queryMembers({ name: name, current: 1, pageSize: 10 }, {});
+const selectMembers = (name: string) =>
+  queryMembers({ name: name, current: 1, pageSize: 10 }, {});
 
-const UpdateForm: React.FC<UpdateFormProps> = (props) => {
+export const UpdateForm: React.FC<UpdateFormProps> = (props) => {
   const [form] = Form.useForm<API.MemberListItem>();
 
   function onOpenChange(open: boolean) {
@@ -60,16 +61,66 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
       onFinish={props.onSubmit}
     >
       <ProForm.Group>
-        <ProFormText width="md" name="name" label="名" placeholder="请输入名字" />
-        <ProFormText width="md" name="alias" label="别名" placeholder="请输入名称" />
-        <ProFormText width="md" name="spouseSurname" label="配偶姓氏" placeholder="请输入名字" />
-        <ProFormText width="md" name="address" label="地址" placeholder="请输入名称" />
-        <ProFormText width="md" name="career" label="职业" placeholder="请输入名字" />
-        <ProFormText width="md" name="position" label="职位" placeholder="请输入名称" />
-        <ProFormDatePicker width="md" name="birthDate" label="出生日期" placeholder="请输入名字" />
-        <ProFormDatePicker width="md" name="deathDate" label="去世日期" placeholder="请输入名称" />
-        <ProFormText width="md" name="birthPlace" label="出生地" placeholder="请输入名字" />
-        <ProFormText width="md" name="deathPlace" label="去世地" placeholder="请输入名称" />
+        <ProFormText
+          width="md"
+          name="name"
+          label="名"
+          placeholder="请输入名字"
+        />
+        <ProFormText
+          width="md"
+          name="alias"
+          label="别名"
+          placeholder="请输入名称"
+        />
+        <ProFormText
+          width="md"
+          name="spouseSurname"
+          label="配偶姓氏"
+          placeholder="请输入名字"
+        />
+        <ProFormText
+          width="md"
+          name="address"
+          label="地址"
+          placeholder="请输入名称"
+        />
+        <ProFormText
+          width="md"
+          name="career"
+          label="职业"
+          placeholder="请输入名字"
+        />
+        <ProFormText
+          width="md"
+          name="position"
+          label="职位"
+          placeholder="请输入名称"
+        />
+        <ProFormDatePicker
+          width="md"
+          name="birthDate"
+          label="出生日期"
+          placeholder="请输入名字"
+        />
+        <ProFormDatePicker
+          width="md"
+          name="deathDate"
+          label="去世日期"
+          placeholder="请输入名称"
+        />
+        <ProFormText
+          width="md"
+          name="birthPlace"
+          label="出生地"
+          placeholder="请输入名字"
+        />
+        <ProFormText
+          width="md"
+          name="deathPlace"
+          label="去世地"
+          placeholder="请输入名称"
+        />
         <ProFormSelect
           showSearch
           disabled={props.values.parentId === -1}
@@ -113,5 +164,3 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
     </ModalForm>
   );
 };
-
-export default UpdateForm;

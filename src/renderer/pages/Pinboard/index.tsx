@@ -1,60 +1,30 @@
-import { Api } from '../../services';
 import React, { useMemo, useRef, useState } from 'react';
 import { useEffectOnce } from 'react-use';
-import { BloodlineGraph } from './graph';
+import { BloodlineGraph } from '../../components/BloodlineGraph';
 import {
   PageContainer,
   ProCard,
   ProFormSelect,
 } from '@ant-design/pro-components';
 import { Button, List, Space, Statistic, Typography } from 'antd';
-import { Graph, GraphData } from '@antv/g6';
-import { queryMembers } from '../../services/api';
+import { Graph } from '@antv/g6';
+import { queryMembers, queryPinboardData } from '../../services/api';
 import ColumnChart from './columnChart';
-
-// 格式化数据
-function formatData(data: any[]): GraphData {
-  const nodes: GraphData['nodes'] = data
-    .map((node) => {
-      return {
-        id: String(node.id),
-        data: { ...node },
-      };
-    })
-    .filter((item) => !!item);
-  const edges: GraphData['edges'] = data
-    .map((node) => {
-      if (node.parentId === -1) {
-        return null;
-      }
-      return {
-        source: String(node.parentId),
-        target: String(node.id),
-      };
-    })
-    .filter((item) => !!item);
-  return { nodes, edges };
-}
 
 const selectMembers = (name: string) =>
   queryMembers({ name: name, current: 1, pageSize: 10 }, {});
 
-const Pinboard: React.FC = () => {
+export const Pinboard: React.FC = () => {
   const graphRef = useRef<{ graph?: Graph }>(null);
-  const [graphData, setGraphData] = useState<any>(null);
-  const [data, setData] = useState<any>({});
+  const [data, setData] = useState<API.ResponseBody.queryPinboardData>();
   const [focusId, setFocusId] = useState<number>();
 
   useEffectOnce(() => {
-    window.bridge.request('/member/dataScreen', {}).then(setData);
-    Api.queryMemberTree().then((data) => {
-      setGraphData(formatData(data));
-    });
+    queryPinboardData().then(setData);
   });
 
-  useEffectOnce(() => {});
-
   const columnData = useMemo(() => {
+    if (!data) return [];
     if (!Array.isArray(data.generationGroup)) return [];
     return data.generationGroup
       .map((item, index, arr) => {
@@ -65,7 +35,7 @@ const Pinboard: React.FC = () => {
   }, [data]);
 
   return (
-    <PageContainer title={false} childrenContentStyle={{ padding: 0 }}>
+    <PageContainer childrenContentStyle={{ padding: 0 }}>
       <ProCard split={'horizontal'}>
         {/* 概要看板 */}
         <ProCard title="概要信息" bordered headerBordered split={'vertical'}>
@@ -144,11 +114,9 @@ const Pinboard: React.FC = () => {
             </Space.Compact>
           }
         >
-          <BloodlineGraph ref={graphRef} data={graphData}></BloodlineGraph>
+          <BloodlineGraph ref={graphRef}></BloodlineGraph>
         </ProCard>
       </ProCard>
     </PageContainer>
   );
 };
-
-export default Pinboard;

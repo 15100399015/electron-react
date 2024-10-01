@@ -1,3 +1,3 @@
-export async function request<T>(path: string, body: any) {
-  return window.bridge.request<T>(path, body);
+export async function request<T, E>(path: string, body: T) {
+  return window.bridge.request<T, E>(path, body);
 }
