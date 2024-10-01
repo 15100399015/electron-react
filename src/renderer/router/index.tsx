@@ -4,7 +4,7 @@ import Layout from '../layout';
 import PageNotFound from '../layout/PageNotFound';
 import MemberDetail from '../pages/MemberDetail';
 import MemberList from '../pages/MemberList';
-import Pedigree from '../pages/Pedigree';
+import Pinboard from '../pages/Pinboard';
 
 const router = createHashRouter([
   {
@@ -12,7 +12,7 @@ const router = createHashRouter([
     children: [
       {
         path: '/',
-        Component: Pedigree,
+        Component: Pinboard,
       },
       {
         path: '/member/list',

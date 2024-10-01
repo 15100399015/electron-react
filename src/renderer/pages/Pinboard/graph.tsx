@@ -221,10 +221,10 @@ export const BloodlineGraph = React.forwardRef<
               const data = items[0]?.data || {};
               return renderToString(
                 <div>
-                  <div>姓名: {data.name}</div>
-                  <div>别名: {data.adivas}</div>
-                  <div>出生日期: {data.birthday}</div>
-                  <div>逝世日期: {data.deathday}</div>
+                  <div>别名: {data.alias}</div>
+                  <div>地址: {data.address}</div>
+                  <div>职业: {data.career}</div>
+                  <div>职位: {data.position}</div>
                 </div>,
               );
             },
