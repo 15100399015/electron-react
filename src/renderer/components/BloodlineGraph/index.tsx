@@ -130,7 +130,7 @@ uLightColors.forEach((color, i) => {
 });
 
 // 格式化数据
-function formatData(data: API.MemberListItem[]): GraphData {
+function formatData(data: API.DataModel.Member[]): GraphData {
   const nodes: GraphData['nodes'] = data
     .map((node) => {
       return {
@@ -173,9 +173,9 @@ export const BloodlineGraph = React.forwardRef<
     });
   }
 
-  useEffectOnce(() => {
+  useEffect(() => {
     fetchData();
-  });
+  }, [props.rootId]);
 
   useImperativeHandle(ref, () => {
     return {
@@ -229,7 +229,6 @@ export const BloodlineGraph = React.forwardRef<
         type: 'dagre',
         nodeSize: [100, 60],
       },
-      autoFit: 'center',
       behaviors: [
         {
           type: 'drag-canvas',
@@ -256,7 +255,7 @@ export const BloodlineGraph = React.forwardRef<
             enable: (e: IElementEvent) => e.targetType === 'node',
             enterable: false,
             getContent: (event: IElementEvent, items: NodeData[]) => {
-              const data = (items[0]?.data || {}) as API.MemberListItem;
+              const data = (items[0]?.data || {}) as API.DataModel.Member;
               if (!data) return '';
               return renderToString(
                 <div>
@@ -334,7 +333,14 @@ export const BloodlineGraph = React.forwardRef<
   useEffect(() => {
     if (data && graphInstance) {
       graphInstance.setData(data);
-      graphInstance.render();
+      graphInstance.render().then(() => {
+        // 聚焦到第一个节点
+        const firstNode = data?.nodes?.[0];
+        if (firstNode && firstNode.id) {
+          const node = graphInstance.getNodeData(firstNode.id);
+          if (node) graphInstance.focusElement(node.id);
+        }
+      });
     }
   }, [props, graphInstance]);
 

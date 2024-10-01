@@ -3,10 +3,11 @@ import { Api } from '../../services';
 import { PageContainer, ProCard } from '@ant-design/pro-components';
 import { Button, Descriptions, message, Space, Statistic } from 'antd';
 import type { FC } from 'react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useEffectOnce } from 'react-use';
 import EventTable from './eventTable';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { BloodlineGraph } from '../../components/BloodlineGraph';
 
 const requestUpdate = async (fields: FormValueType) => {
   try {
@@ -22,7 +23,7 @@ const requestUpdate = async (fields: FormValueType) => {
 export const MemberDetail: FC = () => {
   const params = useParams();
   const [data, setData] = useState<API.DataModel.Member | null>();
-
+  const navigate = useNavigate();
   const [modalOpen, handleModalOpen] = useState<boolean>(false);
 
   async function fetchData() {
@@ -30,9 +31,9 @@ export const MemberDetail: FC = () => {
     setData(res);
   }
 
-  useEffectOnce(() => {
+  useEffect(() => {
     fetchData();
-  });
+  }, [params.memberId]);
 
   const ageInfo = useMemo(() => {
     if (!data) return { title: '享年', age: '未知' };
@@ -73,6 +74,19 @@ export const MemberDetail: FC = () => {
       <Descriptions column={4}>
         <Descriptions.Item label="名">{data?.name}</Descriptions.Item>
         <Descriptions.Item label="别名">{data?.alias}</Descriptions.Item>
+        <Descriptions.Item label="父级">
+          {data?.parentId && data?.parentId !== -1 ? (
+            <a
+              onClick={() => {
+                navigate(`/member/detail/${data.parentId}`);
+              }}
+            >
+              查看
+            </a>
+          ) : (
+            '无'
+          )}
+        </Descriptions.Item>
         <Descriptions.Item label="配偶姓氏">
           {data?.spouseSurname}
         </Descriptions.Item>
@@ -117,12 +131,20 @@ export const MemberDetail: FC = () => {
       childrenContentStyle={{ padding: 0 }}
       tabList={[
         {
-          tab: '已选择',
+          tab: '血缘图',
           key: '1',
+          forceRender: true,
+          destroyInactiveTabPane: false,
+          children: (
+            <BloodlineGraph rootId={Number(params.memberId)}></BloodlineGraph>
+          ),
         },
         {
-          tab: '可点击',
+          tab: '生平事件',
           key: '2',
+          forceRender: true,
+          destroyInactiveTabPane: false,
+          children: <EventTable />,
         },
       ]}
     >
@@ -132,7 +154,6 @@ export const MemberDetail: FC = () => {
         open={modalOpen}
         values={data || {}}
       ></UpdateForm>
-      <EventTable />
     </PageContainer>
   );
 };

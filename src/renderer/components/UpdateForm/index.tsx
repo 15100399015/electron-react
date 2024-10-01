@@ -10,20 +10,20 @@ import {
 import { Form } from 'antd';
 import React from 'react';
 
-export type FormValueType = Partial<API.MemberListItem>;
+export type FormValueType = Partial<API.DataModel.Member>;
 
 export type UpdateFormProps = {
   onCancel: (flag?: boolean, formVals?: FormValueType) => void;
   onSubmit: (values: FormValueType) => Promise<void>;
   open: boolean;
-  values: Partial<API.MemberListItem>;
+  values: Partial<API.DataModel.Member>;
 };
 
 const selectMembers = (name: string) =>
   queryMembers({ name: name, current: 1, pageSize: 10 }, {});
 
 export const UpdateForm: React.FC<UpdateFormProps> = (props) => {
-  const [form] = Form.useForm<API.MemberListItem>();
+  const [form] = Form.useForm<API.DataModel.Member>();
 
   function onOpenChange(open: boolean) {
     if (open) {
@@ -48,7 +48,7 @@ export const UpdateForm: React.FC<UpdateFormProps> = (props) => {
   }
 
   return (
-    <ModalForm<API.MemberListItem>
+    <ModalForm<API.DataModel.Member>
       title="成员编辑"
       open={props.open}
       onOpenChange={onOpenChange}

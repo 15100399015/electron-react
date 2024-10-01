@@ -9,10 +9,12 @@ const orderMap: Record<string, 'ASC' | 'DESC'> = {
 };
 
 const mapColumns = (tableName: string, columns: string[]) => {
-  return columns.map((value, index, arr) => `${tableName}.${value}`).join(', ');
+  return columns.map((value) => `${tableName}.${value}`).join(', ');
 };
 
-function queryTreeSql(id: number, columns: string[]) {
+// 查询树
+function queryTreeSql(id: number) {
+  const columns = Object.keys(new Member());
   return `
         WITH RECURSIVE CommonTable AS (
             SELECT ${mapColumns('member', columns)} FROM member WHERE member.id = ${id}
@@ -20,23 +22,22 @@ function queryTreeSql(id: number, columns: string[]) {
             SELECT ${mapColumns('m', columns)} FROM member m INNER JOIN CommonTable ct ON m.parentId = ct.id
         )
         SELECT
-          *
-        FROM (
-          SELECT
-            CASE
-              WHEN id = ${id} THEN -1
-              ELSE parentId
-            END AS parentId,
-            ${mapColumns(
-              'CommonTable',
-              columns.filter((c) => c !== 'parentId'),
-            )}
-            FROM
-            CommonTable
-        );
+          CASE
+            WHEN id = ${id} THEN -1
+            ELSE parentId
+          END AS parentId,
+          ${mapColumns(
+            'CommonTable',
+            columns.filter((c) => c !== 'parentId'),
+          )}
+        FROM
+          CommonTable
+        ORDER BY
+          CommonTable.generation ASC
     `;
 }
 
+// 更新树层级
 function updateTreeLayer(id: number, diff: string) {
   return `
         WITH RECURSIVE CommonTable AS (
@@ -58,29 +59,36 @@ async function queryPinboardData(): Promise<API.ResponseBody.queryPinboardData> 
     .addSelect('COUNT(*)', 'member_count')
     .groupBy('generation')
     .orderBy('generation', 'ASC')
-    .getRawMany();
+    .getRawMany()
+    .then((records: { generation: number; member_count: number }[]) => {
+      return records.map((record, index) => {
+        const { member_count, generation } = record;
+        const next = records[index + 1];
+        return {
+          generation: generation,
+          member_count: member_count,
+          avgOffspringNum: (next?.member_count || 0) / member_count,
+        };
+      });
+    });
 
   // 人口总数
   const total = await repository.createQueryBuilder().getCount();
 
   // 平均生育数
-  const result = await repository.query(
-    `SELECT AVG(child_count) as num FROM (SELECT parentId, COUNT(*) as child_count FROM member GROUP BY parentId);`,
-  );
+  const avgOffspringNum = await repository
+    .query(
+      `SELECT AVG(child_count) as num FROM (SELECT parentId, COUNT(*) as child_count FROM member GROUP BY parentId);`,
+    )
+    .then((result) => {
+      return Number(Array.isArray(result) ? result[0]?.num : 0);
+    });
 
   return {
     total,
+    avgOffspringNum,
+    generationGroup,
     generationTotal: generationGroup.length,
-    avgOffspringNum: Array.isArray(result) ? result[0].num : 0,
-    generationGroup: generationGroup.map((item, i, arr) => {
-      const { member_count, generation } = item;
-      const nextItem = arr[i + 1];
-      return {
-        generation: generation,
-        member_count: member_count,
-        avgOffspringNum: (nextItem?.member_count || 0) / member_count,
-      };
-    }),
   };
 }
 
@@ -90,19 +98,14 @@ async function queryMemberTree(
 ): Promise<API.ResponseBody.queryMemberTree> {
   const { rootId } = body;
   const repository = appDataSource.getRepository(Member);
-  const columns: (keyof Member)[] = [
-    'id',
-    'name',
-    'parentId',
-    'spouseSurname',
-    'birthDate',
-    'deathDate',
-    'generation',
-  ];
+
   if (rootId) {
-    return await repository.query(queryTreeSql(rootId, columns));
+    return await repository.query(queryTreeSql(rootId));
   }
-  return await repository.find({ select: columns });
+  return await repository
+    .createQueryBuilder('member')
+    .orderBy('generation', 'ASC')
+    .getMany();
 }
 
 // 获取某个成员
@@ -178,7 +181,7 @@ async function addMember(
 
     if (await repository.count()) {
       const parent = await repository.findOneBy({ id: body.parentId });
-      if (!parent) throw new Error('父级错误');
+      if (!parent) throw new Error('父级不存在');
       member.parentId = body.parentId;
       member.generation = parent.generation! + 1;
     } else {
@@ -217,11 +220,11 @@ async function updateMember(
     const repository = transactionalEntityManager.getRepository(Member);
 
     const memberData = await repository.findOneBy({ id: body.id });
-    if (!memberData) throw new Error('不存在');
+    if (!memberData) throw new Error('成员不存在');
     const parentData = await repository.findOneBy({ id: memberData.parentId });
-    if (!parentData) throw new Error('不存在');
+    if (!parentData) throw new Error('成员父级不存在');
     const newParent = await repository.findOneBy({ id: body.parentId });
-    if (!newParent) throw new Error('不存在');
+    if (!newParent) throw new Error('成员新父级不存在');
 
     const diff = newParent.generation! - parentData.generation!;
 

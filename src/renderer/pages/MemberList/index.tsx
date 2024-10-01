@@ -134,7 +134,7 @@ export const MemberList: React.FC = () => {
     },
     {
       title: '操作',
-      dataIndex: 'memberId',
+      dataIndex: 'id',
       valueType: 'option',
       render: (_, record) => [
         <a key="edit" onClick={() => handleEdit(record)}>
