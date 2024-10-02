@@ -17,6 +17,7 @@ import { useEffectOnce } from 'react-use';
 import { useNavigate } from 'react-router-dom';
 import { renderToString } from 'react-dom/server';
 import { Api } from '../../services';
+import { message } from 'antd';
 
 /**
  * 自定义节点
@@ -287,15 +288,22 @@ export const BloodlineGraph = React.forwardRef<
             style: {
               backgroundColor: '#cccccc',
             },
-            onClick: (item: string) => {
+            onClick: async (item: string) => {
               if (item === 'export') {
-                this.toDataURL({
+                const url = await this.toDataURL({
                   encoderOptions: 1,
                   mode: 'overall',
                   type: 'image/png',
-                }).then((url) => {
-                  console.log(url);
                 });
+                await window.bridge
+                  .file('save', {
+                    fileName: 'export.png',
+                    fileData: url,
+                  })
+                  .then(() => {
+                    message.success('导出成功');
+                  })
+                  .catch(() => {});
               } else if (item === 'zoom-in') {
                 this.zoomBy(1.5);
               } else if (item === 'zoom-out') {

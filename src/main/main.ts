@@ -101,7 +101,15 @@ app.on('window-all-closed', () => {
   }
 });
 
-appDataSource.setOptions({ database: getAssetPath('database/data.sqlite') });
+const dbPath = path.join(
+  app.getPath('appData'),
+  app.getName(),
+  'database/data.sqlite',
+);
+
+appDataSource.setOptions({
+  database: dbPath,
+});
 
 Promise.all([app.whenReady(), appDataSource.initialize(), register()])
   .then(() => {

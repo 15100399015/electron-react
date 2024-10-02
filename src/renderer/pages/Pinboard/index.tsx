@@ -6,7 +6,7 @@ import {
   ProCard,
   ProFormSelect,
 } from '@ant-design/pro-components';
-import { Button, List, Space, Statistic, Typography } from 'antd';
+import { Button, Flex, List, Space, Statistic, Typography } from 'antd';
 import { Graph } from '@antv/g6';
 import { queryMembers, queryPinboardData } from '../../services/api';
 import ColumnChart from './columnChart';
@@ -36,9 +36,26 @@ export const Pinboard: React.FC = () => {
 
   return (
     <PageContainer childrenContentStyle={{ padding: 0 }}>
+      <ProCard title="系统介绍" headerBordered>
+        <Typography.Paragraph
+          ellipsis={{
+            expandable: 'collapsible',
+            defaultExpanded: true,
+          }}
+        >
+          📣 📣 📣
+          为了让后世子孙对杨氏家族更加了解，让各支系更加清晰、真实，达到一目了然的目的，
+          也由于老式家谱信息更新不方便，难以保证信息及时性，查阅和共享不便，信息展示形式单一，保存和传承困难等原因，
+          现基于老式家谱家族信息，制作了新的更便捷、更全面、更具交互性的家谱web系统，
+          让家族管理更便捷，信息查阅更方便，信息展示更全面，数据更新更及时，
+          开发历史一个多月，经过反复修改，于公元2024年初次发版，
+          此系统中信息准确无误的与家谱保持一致，
+          集中体现了家谱的全部内容，是家谱一次进化。
+        </Typography.Paragraph>
+      </ProCard>
       <ProCard split={'horizontal'}>
         {/* 概要看板 */}
-        <ProCard title="概要信息" bordered headerBordered split={'vertical'}>
+        <ProCard title="概要信息" headerBordered split={'vertical'}>
           {/* 左侧 */}
           <ProCard split="horizontal" colSpan={8}>
             <ProCard split="vertical">

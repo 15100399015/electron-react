@@ -74,7 +74,7 @@ export const MemberDetail: FC = () => {
       <Descriptions column={4}>
         <Descriptions.Item label="名">{data?.name}</Descriptions.Item>
         <Descriptions.Item label="别名">{data?.alias}</Descriptions.Item>
-        <Descriptions.Item label="父级">
+        <Descriptions.Item label="父辈">
           {data?.parentId && data?.parentId !== -1 ? (
             <a
               onClick={() => {

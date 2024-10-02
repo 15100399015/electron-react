@@ -5,12 +5,15 @@ import { PlusOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import {
   FooterToolbar,
+  ModalForm,
   PageContainer,
+  ProFormSelect,
   ProTable,
 } from '@ant-design/pro-components';
-import { Button, message, Popconfirm } from 'antd';
+import { Button, Form, message, Popconfirm } from 'antd';
 import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { queryMembers } from '../../services/api';
 
 const requestAdd = async (fields: Partial<API.DataModel.Member>) => {
   try {
@@ -169,6 +172,20 @@ export const MemberList: React.FC = () => {
         }}
         toolBarRender={() => [
           <Button
+            onClick={async () => {
+              await window.bridge.database('exportData', {});
+            }}
+          >
+            数据导出
+          </Button>,
+          <ImportData
+            onFinish={async (parentId) => {
+              await window.bridge.database('importData', { parentId });
+              actionRef.current?.reloadAndRest?.();
+              message.success('导入成功');
+            }}
+          />,
+          <Button
             type="primary"
             key="primary"
             onClick={() => {
@@ -214,5 +231,73 @@ export const MemberList: React.FC = () => {
         values={currentRow || {}}
       />
     </PageContainer>
+  );
+};
+
+const selectMembers = (name?: string) =>
+  queryMembers({ name: name, current: 1, pageSize: 10 }, {});
+
+interface ImportDataProps {
+  onFinish: (parentId?: number) => void;
+}
+
+const ImportData: React.FC<ImportDataProps> = (props: ImportDataProps) => {
+  const [form] = Form.useForm<{ parent: number }>();
+  const [open, setOpen] = useState(false);
+  return (
+    <React.Fragment>
+      <Button
+        onClick={async () => {
+          const haveData = !!(await selectMembers()).total;
+          if (haveData) {
+            setOpen(true);
+          } else {
+            props.onFinish();
+          }
+        }}
+      >
+        数据导入
+      </Button>
+      <ModalForm<{
+        parent: number;
+      }>
+        title="选择导入根节点"
+        open={open}
+        form={form}
+        modalProps={{
+          destroyOnClose: true,
+          onCancel: () => {
+            setOpen(false);
+          },
+        }}
+        submitTimeout={2000}
+        onFinish={async (values) => {
+          console.log(values.parent);
+          if (values.parent) {
+            props.onFinish(values.parent);
+            setOpen(false);
+          } else {
+            message.warning('请选择父级');
+          }
+          return true;
+        }}
+      >
+        <ProFormSelect
+          showSearch
+          request={async (params) => {
+            const res = await selectMembers(params.keyWords);
+            if (res.total) {
+              return res.data.map((member) => ({
+                value: member.id,
+                label: member.name,
+              }));
+            } else {
+              return [];
+            }
+          }}
+          name={'parent'}
+        />
+      </ModalForm>
+    </React.Fragment>
   );
 };
