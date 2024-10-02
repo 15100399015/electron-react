@@ -7,7 +7,7 @@ import React, { useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useEffectOnce } from 'react-use';
 
-export default () => {
+export const EventTable = () => {
   const params = useParams();
   const [editableKeys, setEditableRowKeys] = useState<React.Key[]>(() => []);
   const [events, setEvents] = useState<API.DataModel.Evnet[]>([]);
@@ -22,14 +22,17 @@ export default () => {
     fetchEvents();
   });
 
+  // 处理行编辑
   async function handleEdit(record: API.DataModel.Evnet) {
     actionRef.current?.startEditable(record.id!);
   }
+  // 处理行删除
   async function handleDelete(record: API.DataModel.Evnet) {
     await Api.removeEvent(record.id!);
     await fetchEvents();
   }
 
+  // 处理行保存
   async function handleSave(
     key: React.Key | React.Key[],
     record: API.DataModel.Evnet & { add?: boolean },
@@ -100,6 +103,7 @@ export default () => {
     },
   ];
 
+  // 生成随机id
   function generateId() {
     return +(Math.random() * 1000000).toFixed(0);
   }

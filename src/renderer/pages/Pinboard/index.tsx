@@ -6,23 +6,30 @@ import {
   ProCard,
   ProFormSelect,
 } from '@ant-design/pro-components';
-import { Button, Flex, List, Space, Statistic, Typography } from 'antd';
+import { Button, List, Space, Statistic, Typography } from 'antd';
 import { Graph } from '@antv/g6';
 import { queryMembers, queryPinboardData } from '../../services/api';
 import ColumnChart from './columnChart';
 
+// 选择成员
 const selectMembers = (name: string) =>
   queryMembers({ name: name, current: 1, pageSize: 10 }, {});
 
+// 数据看板
 export const Pinboard: React.FC = () => {
+  // 血缘图引用
   const graphRef = useRef<{ graph?: Graph }>(null);
+  // 看板数据
   const [data, setData] = useState<API.ResponseBody.queryPinboardData>();
+  // 聚焦id
   const [focusId, setFocusId] = useState<number>();
 
+  // 首次加载数据
   useEffectOnce(() => {
     queryPinboardData().then(setData);
   });
 
+  // 柱图数据
   const columnData = useMemo(() => {
     if (!data) return [];
     if (!Array.isArray(data.generationGroup)) return [];
@@ -36,6 +43,7 @@ export const Pinboard: React.FC = () => {
 
   return (
     <PageContainer childrenContentStyle={{ padding: 0 }}>
+      {/* 系统介绍部分 */}
       <ProCard title="系统介绍" headerBordered>
         <Typography.Paragraph
           ellipsis={{
@@ -53,11 +61,13 @@ export const Pinboard: React.FC = () => {
           集中体现了家谱的全部内容，是家谱一次进化。
         </Typography.Paragraph>
       </ProCard>
+      {/* 数据展示部分 */}
       <ProCard split={'horizontal'}>
         {/* 概要看板 */}
         <ProCard title="概要信息" headerBordered split={'vertical'}>
           {/* 左侧 */}
           <ProCard split="horizontal" colSpan={8}>
+            {/* 数字概要 */}
             <ProCard split="vertical">
               <ProCard>
                 <Statistic title="总人数" value={data?.total} suffix={'人'} />
@@ -77,6 +87,7 @@ export const Pinboard: React.FC = () => {
                 />
               </ProCard>
             </ProCard>
+            {/* 世代人数信息 */}
             <ProCard title="世代信息">
               <List
                 size="small"
@@ -131,6 +142,7 @@ export const Pinboard: React.FC = () => {
             </Space.Compact>
           }
         >
+          {/* 血缘图 */}
           <BloodlineGraph ref={graphRef}></BloodlineGraph>
         </ProCard>
       </ProCard>

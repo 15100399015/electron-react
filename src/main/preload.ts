@@ -1,21 +1,28 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
+import type { DatabaseBridgeHanderType } from './bridge/database';
+import type { FileBridgeHandlerType } from './bridge/file';
+import type { RequestBridgeHandlerType } from './bridge/request';
+
 export interface Bridge {
-  request: <T, E>(path: string, body: T) => Promise<E>;
-  file: <T, E>(apiName: string, body: T) => Promise<E>;
-  database: <T, E>(apiName: string, body: T) => Promise<E>;
+  request: RequestBridgeHandlerType;
+  file: FileBridgeHandlerType;
+  database: DatabaseBridgeHanderType;
 }
 
 const bridgeConfig: Bridge = {
-  request: async (path, body) => {
-    return ipcRenderer.invoke('request', path, body);
+  // @ts-ignore
+  request: async (path, ...args) => {
+    return ipcRenderer.invoke('request', path, ...args);
   },
-  file: async (apiName, body) => {
-    return ipcRenderer.invoke('file', apiName, body);
+  // @ts-ignore
+  file: async (apiName, ...args) => {
+    return ipcRenderer.invoke('file', apiName, ...args);
   },
-  database: async (apiName, body) => {
-    return ipcRenderer.invoke('database', apiName, body);
+  // @ts-ignore
+  database: async (apiName, ...args) => {
+    return ipcRenderer.invoke('database', apiName, ...args);
   },
-};
+}
 
 contextBridge.exposeInMainWorld('bridge', bridgeConfig);

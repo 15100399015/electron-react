@@ -1,16 +1,16 @@
 import { ipcMain } from 'electron';
-import { handleRequest } from './request';
-import { handleFile } from './file';
-import { handleDatabase } from './database';
+import { requestBridgeHandler } from './request';
+import { fileBridgeHandler } from './file';
+import { databaseBridgeHander } from './database';
 
-const map = {
-  request: handleRequest,
-  file: handleFile,
-  database: handleDatabase,
+const map: Record<string, Function> = {
+  request: requestBridgeHandler,
+  file: fileBridgeHandler,
+  database: databaseBridgeHander,
 };
 
 export async function register() {
   Object.entries(map).forEach(([key, value]) => {
-    ipcMain.handle(key, value);
+    ipcMain.handle(key, (event, ...args) => value(...args));
   });
 }

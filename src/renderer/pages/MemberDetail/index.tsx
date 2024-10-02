@@ -1,15 +1,14 @@
-import { UpdateForm, FormValueType } from '../../components/UpdateForm';
+import { UpdateForm } from '../../components/UpdateForm';
 import { Api } from '../../services';
 import { PageContainer, ProCard } from '@ant-design/pro-components';
 import { Button, Descriptions, message, Space, Statistic } from 'antd';
 import type { FC } from 'react';
 import { useEffect, useMemo, useState } from 'react';
-import { useEffectOnce } from 'react-use';
-import EventTable from './eventTable';
+import { EventTable } from './eventTable';
 import { useNavigate, useParams } from 'react-router-dom';
 import { BloodlineGraph } from '../../components/BloodlineGraph';
 
-const requestUpdate = async (fields: FormValueType) => {
+const requestUpdate = async (fields: API.DataModel.Member) => {
   try {
     await Api.updateMember(fields);
     message.success('更新成功');
@@ -22,8 +21,9 @@ const requestUpdate = async (fields: FormValueType) => {
 
 export const MemberDetail: FC = () => {
   const params = useParams();
-  const [data, setData] = useState<API.DataModel.Member | null>();
   const navigate = useNavigate();
+  const [data, setData] = useState<API.DataModel.Member | null>();
+  const [currentRow, setCurrentRow] = useState<API.DataModel.Member>();
   const [modalOpen, handleModalOpen] = useState<boolean>(false);
 
   async function fetchData() {
@@ -35,6 +35,7 @@ export const MemberDetail: FC = () => {
     fetchData();
   }, [params.memberId]);
 
+  // 格式化年龄信息
   const ageInfo = useMemo(() => {
     if (!data) return { title: '享年', age: '未知' };
     if (data.birthDate && data.deathDate) {
@@ -50,81 +51,97 @@ export const MemberDetail: FC = () => {
     return { title: '享年', age: '未知' };
   }, [data]);
 
-  async function handleFormSubmit(value: FormValueType) {
+  // 处理表单提交
+  async function handleFormSubmit(value: API.DataModel.Member) {
     await requestUpdate({ ...value, id: data!.id });
     handleModalOpen(false);
+    setCurrentRow(undefined);
     await fetchData();
   }
+  // 处理表单取消
   async function handleFormCancel() {
     handleModalOpen(false);
+    setCurrentRow(undefined);
   }
-
-  const extra = (
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: 'flex-end',
-      }}
-    >
-      <Statistic title={ageInfo.title} value={ageInfo.age} />
-    </div>
-  );
-  const description = (
-    <ProCard bordered>
-      <Descriptions column={4}>
-        <Descriptions.Item label="名">{data?.name}</Descriptions.Item>
-        <Descriptions.Item label="别名">{data?.alias}</Descriptions.Item>
-        <Descriptions.Item label="父辈">
-          {data?.parentId && data?.parentId !== -1 ? (
-            <a
-              onClick={() => {
-                navigate(`/member/detail/${data.parentId}`);
-              }}
-            >
-              查看
-            </a>
-          ) : (
-            '无'
-          )}
-        </Descriptions.Item>
-        <Descriptions.Item label="配偶姓氏">
-          {data?.spouseSurname}
-        </Descriptions.Item>
-        <Descriptions.Item label="职业">{data?.career}</Descriptions.Item>
-        <Descriptions.Item label="职位">{data?.position}</Descriptions.Item>
-        <Descriptions.Item label="地址">{data?.address}</Descriptions.Item>
-        <Descriptions.Item label="出生地">{data?.birthPlace}</Descriptions.Item>
-        <Descriptions.Item label="去世地">{data?.deathPlace}</Descriptions.Item>
-        <Descriptions.Item label="出生日期">
-          {data?.birthDate}
-        </Descriptions.Item>
-        <Descriptions.Item label="去世日期">
-          {data?.deathDate}
-        </Descriptions.Item>
-        <Descriptions.Item label="备注">{data?.description}</Descriptions.Item>
-      </Descriptions>
-    </ProCard>
-  );
-
-  const action = (
-    <Space>
-      <Button
-        type="primary"
-        onClick={() => {
-          handleModalOpen(true);
-        }}
-      >
-        修改
-      </Button>
-    </Space>
-  );
 
   return (
     <PageContainer
       title={`档案: ${data?.name}`}
-      extra={action}
-      content={description}
-      extraContent={extra}
+      extra={
+        <Space>
+          <Button
+            type="primary"
+            onClick={() => {
+              handleModalOpen(true);
+              setCurrentRow({ parentId: data?.id });
+            }}
+          >
+            添加子辈
+          </Button>
+          <Button
+            type="primary"
+            onClick={() => {
+              handleModalOpen(true);
+              setCurrentRow({ ...data });
+            }}
+          >
+            编辑
+          </Button>
+        </Space>
+      }
+      content={
+        <ProCard bordered>
+          <Descriptions column={4}>
+            <Descriptions.Item label="id">{data?.id}</Descriptions.Item>
+            <Descriptions.Item label="名">{data?.name}</Descriptions.Item>
+            <Descriptions.Item label="别名">{data?.alias}</Descriptions.Item>
+            <Descriptions.Item label="父辈">
+              {data?.parentId && data?.parentId !== -1 ? (
+                <a
+                  onClick={() => {
+                    navigate(`/member/detail/${data.parentId}`);
+                  }}
+                >
+                  查看
+                </a>
+              ) : (
+                '无'
+              )}
+            </Descriptions.Item>
+            <Descriptions.Item label="配偶姓氏">
+              {data?.spouseSurname}
+            </Descriptions.Item>
+            <Descriptions.Item label="职业">{data?.career}</Descriptions.Item>
+            <Descriptions.Item label="职位">{data?.position}</Descriptions.Item>
+            <Descriptions.Item label="地址">{data?.address}</Descriptions.Item>
+            <Descriptions.Item label="出生地">
+              {data?.birthPlace}
+            </Descriptions.Item>
+            <Descriptions.Item label="去世地">
+              {data?.deathPlace}
+            </Descriptions.Item>
+            <Descriptions.Item label="出生日期">
+              {data?.birthDate}
+            </Descriptions.Item>
+            <Descriptions.Item label="去世日期">
+              {data?.deathDate}
+            </Descriptions.Item>
+            <Descriptions.Item label="备注">
+              {data?.description}
+            </Descriptions.Item>
+          </Descriptions>
+        </ProCard>
+      }
+      extraContent={
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+          }}
+        >
+          <Statistic title={ageInfo.title} value={ageInfo.age} />
+        </div>
+      }
       style={{
         backgroundColor: '#ffffff',
       }}
@@ -152,7 +169,7 @@ export const MemberDetail: FC = () => {
         onSubmit={handleFormSubmit}
         onCancel={handleFormCancel}
         open={modalOpen}
-        values={data || {}}
+        values={currentRow || {}}
       ></UpdateForm>
     </PageContainer>
   );

@@ -10,11 +10,9 @@ import {
 import { Form } from 'antd';
 import React from 'react';
 
-export type FormValueType = Partial<API.DataModel.Member>;
-
 export type UpdateFormProps = {
-  onCancel: (flag?: boolean, formVals?: FormValueType) => void;
-  onSubmit: (values: FormValueType) => Promise<void>;
+  onCancel: () => void;
+  onSubmit: (values: API.DataModel.Member) => Promise<void>;
   open: boolean;
   values: Partial<API.DataModel.Member>;
 };

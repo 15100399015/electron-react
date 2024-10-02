@@ -9,11 +9,12 @@ import {
   Label,
   LabelStyleProps,
   NodeData,
+  NodeEvent,
   Rect,
   register,
 } from '@antv/g6';
 import React, { useEffect, useRef } from 'react';
-import { useEffectOnce } from 'react-use';
+import { useEffectOnce, useUpdate } from 'react-use';
 import { useNavigate } from 'react-router-dom';
 import { renderToString } from 'react-dom/server';
 import { Api } from '../../services';
@@ -74,8 +75,10 @@ class ChartNode extends Rect {
   }
 }
 
+// 注册自定义 g6 节点
 register(ExtensionCategory.NODE, 'chart-node', ChartNode);
 
+// 颜色
 const lightColors = [
   '#8FE9FF',
   '#87EAEF',
@@ -162,10 +165,10 @@ export const BloodlineGraph = React.forwardRef<
   { graph?: Graph },
   BloodlineGraphProps
 >((props, ref) => {
-  const container = useRef<HTMLDivElement>(null);
-  const [graphInstance, setGraphInstance] = useState<Graph>();
   const navigate = useNavigate();
-
+  const container = useRef<HTMLDivElement>(null);
+  const graphInstance = useRef<Graph>();
+  const updater = useUpdate();
   const [data, setData] = useState<GraphData>({ nodes: [], edges: [] });
 
   function fetchData() {
@@ -180,13 +183,12 @@ export const BloodlineGraph = React.forwardRef<
 
   useImperativeHandle(ref, () => {
     return {
-      graph: graphInstance,
+      graph: graphInstance.current,
     };
   });
 
   useEffectOnce(() => {
     if (!container.current) return;
-
     const graph = new Graph({
       container: container.current,
       data: { nodes: [], edges: [] },
@@ -308,8 +310,10 @@ export const BloodlineGraph = React.forwardRef<
                 this.zoomBy(1.5);
               } else if (item === 'zoom-out') {
                 this.zoomBy(0.5);
-              } else if (item === 'reset') {
+              } else if (item === 'auto-fit') {
                 this.getPluginInstance<Fullscreen>('fullscreen')?.request();
+              } else if (item === 'reset') {
+                fetchData();
               }
             },
             getItems: () => {
@@ -319,16 +323,17 @@ export const BloodlineGraph = React.forwardRef<
                 { id: 'zoom-out', value: 'zoom-out' },
                 { id: 'export', value: 'export' },
                 { id: 'reset', value: 'reset' },
+                { id: 'auto-fit', value: 'auto-fit' },
               ];
             },
           };
         },
       ],
     });
-    setGraphInstance(graph);
+    graphInstance.current = graph;
+    updater();
 
-    graph.on('node:click', (event) => {
-      console.log(event.type);
+    graph.on(NodeEvent.CLICK, (event) => {
       const { target } = event;
       navigate(`/member/detail/${target.id}`);
     });
@@ -339,18 +344,18 @@ export const BloodlineGraph = React.forwardRef<
   });
 
   useEffect(() => {
-    if (data && graphInstance) {
-      graphInstance.setData(data);
-      graphInstance.render().then(() => {
+    if (data && graphInstance.current) {
+      graphInstance.current.setData(data);
+      graphInstance.current.render().then(() => {
         // 聚焦到第一个节点
         const firstNode = data?.nodes?.[0];
         if (firstNode && firstNode.id) {
-          const node = graphInstance.getNodeData(firstNode.id);
-          if (node) graphInstance.focusElement(node.id);
+          const node = graphInstance.current!.getNodeData(firstNode.id);
+          if (node) graphInstance.current!.focusElement(node.id);
         }
       });
     }
-  }, [props, graphInstance]);
+  }, [graphInstance.current, data]);
 
   return <div ref={container} style={{ width: '100%', height: '80vh' }}></div>;
 });

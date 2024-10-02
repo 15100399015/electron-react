@@ -1,7 +1,5 @@
-import type { FormValueType } from '../../components/UpdateForm';
 import { UpdateForm } from '../../components/UpdateForm';
 import { Api } from '../../services';
-import { PlusOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import {
   FooterToolbar,
@@ -15,7 +13,7 @@ import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { queryMembers } from '../../services/api';
 
-const requestAdd = async (fields: Partial<API.DataModel.Member>) => {
+const requestAdd = async (fields: API.DataModel.Member) => {
   try {
     await Api.addMember({ ...fields });
     message.success('添加成功');
@@ -26,7 +24,7 @@ const requestAdd = async (fields: Partial<API.DataModel.Member>) => {
   }
 };
 
-const requestUpdate = async (fields: FormValueType) => {
+const requestUpdate = async (fields: API.DataModel.Member) => {
   try {
     await Api.updateMember(fields);
     message.success('更新成功');
@@ -59,27 +57,55 @@ export const MemberList: React.FC = () => {
     [],
   );
 
+  // 跳转到详情页
   async function handleGoDetailPage(record: API.DataModel.Member) {
     navigate(`/member/detail/${record.id}`);
   }
 
+  // 打开编辑框
   async function handleEdit(record: API.DataModel.Member) {
     handleModalOpen(true);
     setCurrentRow(record);
   }
 
+  // 删除记录
   async function handleDelete(record: API.DataModel.Member) {
     await requestRemove([record]);
     actionRef.current?.reloadAndRest?.();
   }
 
+  // 批量删除记录
   async function handleBatchDelete() {
     await requestRemove(selectedRowsState);
     setSelectedRows([]);
     actionRef.current?.reloadAndRest?.();
   }
 
-  async function handleFormSubmit(value: FormValueType) {
+  // 添加子成员
+  async function handleAddChild(record: API.DataModel.Member) {
+    handleModalOpen(true);
+    setCurrentRow({ parentId: record.id });
+  }
+  // 新增成员
+  async function handleAdd() {
+    handleModalOpen(true);
+    setCurrentRow(undefined);
+  }
+
+  // 导入数据
+  async function handleImportData(parentId?: number) {
+    await window.bridge.database('importData', { parentId });
+    actionRef.current?.reloadAndRest?.();
+    message.success('导入成功');
+  }
+  // 导出数据
+  async function handleExportData() {
+    await window.bridge.database('exportData');
+    message.success('导出成功');
+  }
+
+  // 表单提交
+  async function handleFormSubmit(value: API.DataModel.Member) {
     if (currentRow) {
       await requestUpdate({ ...value, id: currentRow.id });
     } else {
@@ -90,10 +116,12 @@ export const MemberList: React.FC = () => {
     actionRef.current?.reload?.();
   }
 
+  // 表单取消
   async function handleFormCancel() {
     handleModalOpen(false);
     setCurrentRow(undefined);
   }
+  // table column
   const columns: ProColumns<API.DataModel.Member>[] = [
     {
       title: 'id',
@@ -140,6 +168,9 @@ export const MemberList: React.FC = () => {
       dataIndex: 'id',
       valueType: 'option',
       render: (_, record) => [
+        <a key="edit" onClick={() => handleAddChild(record)}>
+          添加子辈
+        </a>,
         <a key="edit" onClick={() => handleEdit(record)}>
           编辑
         </a>,
@@ -171,30 +202,10 @@ export const MemberList: React.FC = () => {
           labelAlign: 'left',
         }}
         toolBarRender={() => [
-          <Button
-            onClick={async () => {
-              await window.bridge.database('exportData', {});
-              message.success('导出成功');
-            }}
-          >
-            数据导出
-          </Button>,
-          <ImportData
-            onFinish={async (parentId) => {
-              await window.bridge.database('importData', { parentId });
-              actionRef.current?.reloadAndRest?.();
-              message.success('导入成功');
-            }}
-          />,
-          <Button
-            type="primary"
-            key="primary"
-            onClick={() => {
-              handleModalOpen(true);
-              setCurrentRow(undefined);
-            }}
-          >
-            <PlusOutlined /> 创建
+          <Button onClick={handleExportData}>数据导出</Button>,
+          <ImportData onFinish={handleImportData} />,
+          <Button type="primary" key="primary" onClick={handleAdd}>
+            创建
           </Button>,
         ]}
         request={(params, sort) => {

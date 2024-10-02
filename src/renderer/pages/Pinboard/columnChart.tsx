@@ -1,9 +1,9 @@
 import React, { useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { useEffectOnce } from 'react-use';
+import { useEffectOnce, useUpdate } from 'react-use';
 import { Chart } from '@antv/g2';
 
 interface ColumnChartProps {
-  data: any;
+  data: API.ResponseBody.queryPinboardData['generationGroup'];
 }
 
 export const ColumnChart = React.forwardRef<
@@ -11,11 +11,12 @@ export const ColumnChart = React.forwardRef<
   ColumnChartProps
 >((props, ref) => {
   const container = useRef<HTMLDivElement>(null);
-  const [chartInstance, setChartInstance] = useState<Chart>();
+  const chartInstance = useRef<Chart>();
+  const updater = useUpdate();
 
   useImperativeHandle(ref, () => {
     return {
-      graph: chartInstance,
+      graph: chartInstance.current,
     };
   });
 
@@ -27,8 +28,8 @@ export const ColumnChart = React.forwardRef<
       autoFit: true,
       theme: 'classic',
     });
-
-    setChartInstance(chart);
+    chartInstance.current = chart;
+    updater();
     chart
       .interval()
       .data([])
@@ -45,8 +46,8 @@ export const ColumnChart = React.forwardRef<
   });
 
   useEffect(() => {
-    if (props.data && chartInstance) {
-      chartInstance.changeData(props.data);
+    if (props.data && chartInstance.current) {
+      chartInstance.current.changeData(props.data);
     }
   }, [props.data, chartInstance]);
 

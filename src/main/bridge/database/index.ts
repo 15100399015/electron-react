@@ -47,7 +47,7 @@ async function importData(data: MemberNode, parentId = -1, layer = 1) {
   }
 }
 
-const routes: Record<string, Function> = {
+const routes = {
   exportData: async () => {
     const members = await appDataSource.getRepository(Member).find();
     const events = await appDataSource.getRepository(Event).find();
@@ -91,7 +91,7 @@ const routes: Record<string, Function> = {
       });
   },
   // 导入数据
-  importData: async (body: any) => {
+  importData: async (body: { parentId?: number }) => {
     const { parentId } = body;
     const repository = appDataSource.getRepository(Member);
     if (await repository.count()) {
@@ -138,10 +138,24 @@ const routes: Record<string, Function> = {
   },
 };
 
-export async function handleDatabase(event: any, apiName: string, body: any) {
+type RoutesType = typeof routes;
+type ApiNames = keyof RoutesType;
+
+export interface DatabaseBridgeHanderType {
+  <K extends ApiNames>(
+    apiName: K,
+    ...args: Parameters<RoutesType[K]>
+  ): ReturnType<RoutesType[K]>;
+}
+
+export const databaseBridgeHander = async (
+  apiName: ApiNames,
+  ...args: Parameters<RoutesType[ApiNames]>
+) => {
   const controller = routes[apiName];
   if (controller && typeof controller === 'function') {
-    return await routes[apiName](body);
+    // @ts-ignore
+    return await controller(...args);
   }
   throw new Error('404');
-}
+};

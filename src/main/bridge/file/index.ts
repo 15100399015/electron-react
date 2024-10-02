@@ -22,7 +22,7 @@ function parseDataUrl(dataUrl: string) {
   };
 }
 
-const routes: Record<string, Function> = {
+const routes = {
   save: async (body: any) => {
     const { fileName, fileData } = body;
     const { data, isBase64 } = parseDataUrl(fileData);
@@ -41,14 +41,25 @@ const routes: Record<string, Function> = {
         }
       });
   },
-
-  exportAllData: async () => {},
 };
 
-export async function handleFile(event: any, apiName: string, body: any) {
+type RoutesType = typeof routes;
+type ApiNames = keyof RoutesType;
+
+export interface FileBridgeHandlerType {
+  <K extends ApiNames>(
+    apiName: K,
+    ...args: Parameters<RoutesType[K]>
+  ): ReturnType<RoutesType[K]>;
+}
+
+export const fileBridgeHandler = async (
+  apiName: ApiNames,
+  ...args: Parameters<RoutesType[ApiNames]>
+) => {
   const controller = routes[apiName];
   if (controller && typeof controller === 'function') {
-    return await routes[apiName](body);
+    return await controller(...args);
   }
   throw new Error('404');
-}
+};
