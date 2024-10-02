@@ -99,7 +99,7 @@ const routes: Record<string, Function> = {
         id: parentId,
       });
       if (!parent) return Promise.reject('父级不存在');
-      const defaultGeneration = parent.generation;
+      const defaultGeneration = Number(parent.generation) + 1;
       const defaultParentId = parent.id;
       await dialog
         .showOpenDialog({

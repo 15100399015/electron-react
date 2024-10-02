@@ -174,6 +174,7 @@ export const MemberList: React.FC = () => {
           <Button
             onClick={async () => {
               await window.bridge.database('exportData', {});
+              message.success('导出成功');
             }}
           >
             数据导出
