@@ -204,17 +204,17 @@ async function updateMember(
   member.id = body.id;
   member.name = body.name;
   member.parentId = body.parentId;
-  member.alias = body.alias;
-  member.spouseSurname = body.spouseSurname;
-  member.pictureUrl = body.pictureUrl;
-  member.career = body.career;
-  member.position = body.position;
-  member.address = body.address;
-  member.birthDate = body.birthDate;
-  member.deathDate = body.deathDate;
-  member.birthPlace = body.birthPlace;
-  member.deathPlace = body.deathPlace;
-  member.description = body.description;
+  member.alias = body.alias || null;
+  member.spouseSurname = body.spouseSurname || null;
+  member.pictureUrl = body.pictureUrl || null;
+  member.career = body.career || null;
+  member.position = body.position || null;
+  member.address = body.address || null;
+  member.birthDate = body.birthDate || null;
+  member.deathDate = body.deathDate || null;
+  member.birthPlace = body.birthPlace || null;
+  member.deathPlace = body.deathPlace || null;
+  member.description = body.description || null;
 
   await appDataSource.transaction(async (transactionalEntityManager) => {
     const repository = transactionalEntityManager.getRepository(Member);
@@ -225,7 +225,7 @@ async function updateMember(
     // 需要更新层级
     if (body.parentId && body.parentId !== memberData.parentId) {
       const parentData = await repository.findOneBy({
-        id: memberData.parentId,
+        id: memberData.parentId!,
       });
       if (!parentData) throw new Error('成员父级不存在');
       const newParent = await repository.findOneBy({ id: body.parentId });

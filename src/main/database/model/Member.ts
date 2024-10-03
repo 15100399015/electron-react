@@ -1,19 +1,19 @@
 export class Member {
   id?: number;
+  name?: string;
   parentId?: number;
   generation?: number;
-  name?: string;
-  alias?: string;
-  spouseSurname?: string;
-  pictureUrl?: string;
-  career?: string;
-  position?: string;
-  address?: string;
-  birthDate?: string;
-  deathDate?: string;
-  birthPlace?: string;
-  deathPlace?: string;
-  description?: string;
-  createTime?: string;
-  updateTime?: string;
+  alias?: string | null;
+  spouseSurname?: string | null;
+  pictureUrl?: string | null;
+  career?: string | null;
+  position?: string | null;
+  address?: string | null;
+  birthDate?: string | null;
+  deathDate?: string | null;
+  birthPlace?: string | null;
+  deathPlace?: string | null;
+  description?: string | null;
+  createTime?: string | null;
+  updateTime?: string | null;
 }

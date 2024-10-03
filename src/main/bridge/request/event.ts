@@ -37,9 +37,9 @@ async function updateEvent(
   const evnet = new Event();
 
   evnet.id = body.id;
-  evnet.eventDate = body.eventDate;
-  evnet.eventType = body.eventType;
-  evnet.eventDescription = body.eventDescription;
+  evnet.eventDate = body.eventDate || null;
+  evnet.eventType = body.eventType || null;
+  evnet.eventDescription = body.eventDescription || null;
 
   appDataSource.getRepository(Event).save(evnet);
 

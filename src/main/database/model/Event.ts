@@ -1,9 +1,9 @@
 export class Event {
   id?: number;
   memberId?: number;
-  eventType?: string;
-  eventDate?: string;
-  eventDescription?: string;
-  createTime?: string;
-  updateTime?: string;
+  eventType?: string | null;
+  eventDate?: string | null;
+  eventDescription?: string | null;
+  createTime?: string | null;
+  updateTime?: string | null;
 }
