@@ -1,17 +1,11 @@
-import { DisplayObject } from '@antv/g-lite';
 import { useImperativeHandle, useState } from 'react';
 import {
-  ExtensionCategory,
   Fullscreen,
   Graph,
   GraphData,
   IElementEvent,
-  Label,
-  LabelStyleProps,
   NodeData,
   NodeEvent,
-  Rect,
-  register,
 } from '@antv/g6';
 import React, { useEffect, useRef } from 'react';
 import { useEffectOnce, useUpdate } from 'react-use';
@@ -19,64 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import { renderToString } from 'react-dom/server';
 import { Api } from '../../services';
 import { message } from 'antd';
-
-/**
- * 自定义节点
- */
-class ChartNode extends Rect {
-  get data(): any {
-    return this.context.model.getElementDataById(this.id).data;
-  }
-
-  protected getLabelStyle(): LabelStyleProps {
-    const text = this.data.name;
-    return {
-      text,
-      fill: '#2078B4',
-      fontSize: 14,
-      fontWeight: 400,
-      textAlign: 'left',
-      transform: 'translate(-45, -15)',
-    };
-  }
-
-  getSpouseSurnameStyle(): DisplayObject['attributes'] {
-    const text = `${this.data.spouseSurname || '*'}氏`;
-    return {
-      text: text,
-      fontSize: 8,
-      fontWeight: 400,
-      fill: '#343f4a',
-      textAlign: 'left',
-      transform: 'translate(-45, 0)',
-    };
-  }
-
-  getGenerationStyle(): DisplayObject['attributes'] {
-    const text = `${this.data.generation}世代`;
-    return {
-      text: text,
-      fontSize: 8,
-      fontWeight: 400,
-      fill: '#343f4a',
-      textAlign: 'left',
-      transform: 'translate(-45, 13)',
-    };
-  }
-
-  render(attributes = this.parsedAttributes, container = this) {
-    super.render(attributes, container);
-
-    const spouseSurnameStyle = this.getSpouseSurnameStyle();
-    this.upsert('spouseSurname', Label, spouseSurnameStyle, container);
-
-    const generationStyle = this.getGenerationStyle();
-    this.upsert('generation', Label, generationStyle, container);
-  }
-}
-
-// 注册自定义 g6 节点
-register(ExtensionCategory.NODE, 'chart-node', ChartNode);
+import './G6Node';
 
 // 颜色
 const lightColors = [
@@ -266,6 +203,7 @@ export const BloodlineGraph = React.forwardRef<
                   <div>地址: {data.address}</div>
                   <div>职业: {data.career}</div>
                   <div>职位: {data.position}</div>
+                  <div>描述: {data.description}</div>
                 </div>,
               );
             },

@@ -168,7 +168,7 @@ export const MemberList: React.FC = () => {
       dataIndex: 'id',
       valueType: 'option',
       render: (_, record) => [
-        <a key="edit" onClick={() => handleAddChild(record)}>
+        <a key="addChild" onClick={() => handleAddChild(record)}>
           添加子辈
         </a>,
         <a key="edit" onClick={() => handleEdit(record)}>

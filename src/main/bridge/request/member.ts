@@ -221,14 +221,22 @@ async function updateMember(
 
     const memberData = await repository.findOneBy({ id: body.id });
     if (!memberData) throw new Error('成员不存在');
-    const parentData = await repository.findOneBy({ id: memberData.parentId });
-    if (!parentData) throw new Error('成员父级不存在');
-    const newParent = await repository.findOneBy({ id: body.parentId });
-    if (!newParent) throw new Error('成员新父级不存在');
 
-    const diff = newParent.generation! - parentData.generation!;
-
-    await repository.query(updateTreeLayer(body.id as number, String(diff)));
+    // 需要更新层级
+    if (body.parentId && body.parentId !== memberData.parentId) {
+      const parentData = await repository.findOneBy({
+        id: memberData.parentId,
+      });
+      if (!parentData) throw new Error('成员父级不存在');
+      const newParent = await repository.findOneBy({ id: body.parentId });
+      if (!newParent) throw new Error('成员新父级不存在');
+      const diff = newParent.generation! - parentData.generation!;
+      if (diff !== 0) {
+        await repository.query(
+          updateTreeLayer(body.id as number, String(diff)),
+        );
+      }
+    }
 
     await repository.save(member);
   });
