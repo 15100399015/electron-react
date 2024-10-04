@@ -1,4 +1,4 @@
-import { queryMembers } from '../../services/api';
+import { queryMemberById, queryMembers } from '../../services/api';
 import {
   ModalForm,
   ProForm,
@@ -121,30 +121,45 @@ export const UpdateForm: React.FC<UpdateFormProps> = (props) => {
         />
         <ProFormSelect
           showSearch
-          disabled={props.values.parentId === -1}
+          disabled={props.values?.parentId === -1}
           request={async (params) => {
-            if (props.values.parentId === -1) {
-              return [
-                {
-                  value: -1,
-                  label: '无',
-                },
-              ];
+            const defaultParentId = props.values.parentId;
+            if (defaultParentId) {
+              if (defaultParentId === -1) {
+                return [
+                  {
+                    value: -1,
+                    label: '先祖',
+                  },
+                ];
+              }
+              if (defaultParentId > 0 && !params.keyWords) {
+                const res = await queryMemberById(defaultParentId);
+                if (res) {
+                  return [
+                    {
+                      label: res.name,
+                      value: res.id,
+                    },
+                  ];
+                }
+              }
             }
             const res = await selectMembers(params.keyWords);
-            if (res.total) {
+            if (res.total > 0) {
               return res.data.map((member) => ({
                 value: member.id,
                 label: member.name,
               }));
-            } else {
+            } else if (res.total === 0) {
               return [
                 {
                   value: -1,
-                  label: '无',
+                  label: '先祖',
                 },
               ];
             }
+            return [];
           }}
           dependencies={[]}
           width="md"

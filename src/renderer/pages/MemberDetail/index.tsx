@@ -37,7 +37,7 @@ export const MemberDetail: FC = () => {
 
   // 格式化年龄信息
   const ageInfo = useMemo(() => {
-    if (!data) return { title: '享年', age: '未知' };
+    if (!data) return { title: '享年', age: null };
     if (data.birthDate && data.deathDate) {
       const start = new Date(data.birthDate).getFullYear();
       const end = new Date(data.deathDate).getFullYear();
@@ -48,7 +48,7 @@ export const MemberDetail: FC = () => {
       const end = new Date().getFullYear();
       return { title: '现年', age: end - start };
     }
-    return { title: '享年', age: '未知' };
+    return { title: '享年', age: null };
   }, [data]);
 
   // 处理表单提交
@@ -139,7 +139,11 @@ export const MemberDetail: FC = () => {
             justifyContent: 'flex-end',
           }}
         >
-          <Statistic title={ageInfo.title} value={ageInfo.age} />
+          <Statistic
+            title={ageInfo.title}
+            value={ageInfo.age || '未知'}
+            suffix={ageInfo.age && '岁'}
+          />
         </div>
       }
       style={{

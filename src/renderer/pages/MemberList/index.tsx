@@ -190,6 +190,7 @@ export const MemberList: React.FC = () => {
     <PageContainer childrenContentStyle={{ padding: 0 }}>
       <ProTable<API.DataModel.Member, API.RequestBody.queryMember>
         cardBordered
+        defaultSize="small"
         actionRef={actionRef}
         rowKey="id"
         search={{

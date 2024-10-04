@@ -36,7 +36,10 @@ export const Pinboard: React.FC = () => {
     return data.generationGroup
       .map((item, index, arr) => {
         if (index === arr.length - 1) return;
-        return item;
+        return {
+          ...item,
+          avgOffspringNum: Number(item.avgOffspringNum.toFixed(2)),
+        };
       })
       .filter((item) => !!item);
   }, [data]);

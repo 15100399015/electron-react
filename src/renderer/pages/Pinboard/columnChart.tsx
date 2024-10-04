@@ -30,13 +30,38 @@ export const ColumnChart = React.forwardRef<
     });
     chartInstance.current = chart;
     updater();
+    chart.data([]);
     chart
       .interval()
-      .data([])
       .encode('x', 'generation')
       .encode('y', 'avgOffspringNum')
-      .axis('x', { title: '世代' })
-      .axis('y', { title: '平均后代' });
+      .axis('x', {
+        title: '世代',
+        labelFormatter: (text: number) => `第${text}代`,
+      })
+      .axis('y', {
+        title: '平均后代',
+        labelFormatter: (text: number) => `${text}个`,
+      })
+      .label([
+        {
+          text: 'avgOffspringNum',
+          fill: '#ffffff',
+          fontWeight: 600,
+          dy: 5,
+          formatter: (text: number) => `平均${text}个`,
+        },
+      ])
+      .tooltip(false);
+
+    chart
+      .lineY()
+      .transform({ type: 'groupX', y: 'mean' })
+      .encode('y', 'avgOffspringNum')
+      .style('stroke', '#F4664A')
+      .style('strokeOpacity', 1)
+      .style('lineWidth', 2)
+      .style('lineDash', [3, 3]);
 
     chart.render();
 
