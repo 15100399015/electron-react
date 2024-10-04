@@ -15,6 +15,15 @@ import { Api } from '../../services';
 import { message } from 'antd';
 import './G6Node';
 
+// 是否开启全屏功能
+function isFullscreenEnabled() {
+  return document.fullscreenEnabled;
+}
+// 是否进入全屏
+function isFullScreen() {
+  return !!document.fullscreenElement;
+}
+
 // 颜色
 const lightColors = [
   '#8FE9FF',
@@ -249,7 +258,11 @@ export const BloodlineGraph = React.forwardRef<
               } else if (item === 'zoom-out') {
                 this.zoomBy(0.5);
               } else if (item === 'auto-fit') {
-                this.getPluginInstance<Fullscreen>('fullscreen')?.request();
+                if (isFullScreen()) {
+                  this.getPluginInstance<Fullscreen>('fullscreen')?.exit();
+                } else {
+                  this.getPluginInstance<Fullscreen>('fullscreen')?.request();
+                }
               } else if (item === 'reset') {
                 fetchData();
               }
