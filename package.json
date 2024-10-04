@@ -1,5 +1,6 @@
 {
-  "name": "electron-react-boilerplate",
+  "name": "erb-genealogy",
+  "productName": "Genealogy",
   "description": "A foundation for scalable desktop apps",
   "keywords": [],
   "license": "MIT",
@@ -153,8 +154,8 @@
     "webpack-merge": "^5.9.0"
   },
   "build": {
-    "productName": "ElectronReact",
-    "appId": "org.erb.ElectronReact",
+    "productName": "Genealogy",
+    "appId": "org.erb.genealogy",
     "asar": true,
     "asarUnpack": "**\\*.{node,dll}",
     "files": [
@@ -196,6 +197,14 @@
       "target": [
         "nsis"
       ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "家谱系统"
     },
     "linux": {
       "target": [

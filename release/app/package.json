@@ -1,5 +1,6 @@
 {
-  "name": "electron-react-boilerplate",
+  "name": "erb-genealogy",
+  "productName": "Genealogy",
   "version": "4.6.0",
   "description": "A foundation for scalable desktop apps",
   "license": "MIT",
