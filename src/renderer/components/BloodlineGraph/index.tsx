@@ -187,12 +187,7 @@ export const BloodlineGraph = React.forwardRef<
           type: 'zoom-canvas',
           enable: () => isFullScreen(),
           trigger: ['Control'],
-        },
-        {
-          type: 'scroll-canvas',
-          range: Infinity,
-          enable: () => isFullScreen(),
-        },
+        }
       ],
       plugins: [
         function () {
