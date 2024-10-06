@@ -67,7 +67,9 @@ async function queryPinboardData(): Promise<API.ResponseBody.queryPinboardData> 
         return {
           generation: generation,
           member_count: member_count,
-          avgOffspringNum: (next?.member_count || 0) / member_count,
+          avgOffspringNum: Number(
+            ((next?.member_count || 0) / member_count).toFixed(2),
+          ),
         };
       });
     });
@@ -81,7 +83,7 @@ async function queryPinboardData(): Promise<API.ResponseBody.queryPinboardData> 
       `SELECT AVG(child_count) as num FROM (SELECT parentId, COUNT(*) as child_count FROM member GROUP BY parentId);`,
     )
     .then((result) => {
-      return Number(Array.isArray(result) ? result[0]?.num : 0);
+      return Number((result[0]?.num || 0).toFixed(2));
     });
 
   return {
