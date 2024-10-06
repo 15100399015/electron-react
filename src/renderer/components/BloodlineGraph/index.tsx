@@ -131,7 +131,6 @@ export const BloodlineGraph = React.forwardRef<
       },
       layout: {
         type: 'dagre',
-        nodesep: 10,
         nodeSize: [100, 60],
       },
       behaviors: [
