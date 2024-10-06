@@ -28,6 +28,18 @@ export const MemberEntity = new EntitySchema({
       type: 'text',
       nullable: true,
     },
+    remark: {
+      type: 'text',
+      nullable: true,
+    },
+    highlight: {
+      type: 'text',
+      nullable: true,
+    },
+    relation: {
+      type: 'text',
+      nullable: true,
+    },
     pictureUrl: {
       type: 'text',
       nullable: true,

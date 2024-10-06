@@ -73,7 +73,7 @@ async function queryPinboardData(): Promise<API.ResponseBody.queryPinboardData> 
     });
 
   // 人口总数
-  const total = await repository.createQueryBuilder().getCount();
+  const total = await repository.count();
 
   // 平均生育数
   const avgOffspringNum = await repository
@@ -118,6 +118,10 @@ async function queryMemberById(body: API.RequestBody.queryMemberById) {
   return member;
 }
 
+// 获取成员总数
+async function queryCount() {
+  return await appDataSource.getRepository(Member).count();
+}
 // 分页查询成员信息
 async function queryMember(
   body: API.RequestBody.queryMember,
@@ -166,6 +170,9 @@ async function addMember(
   member.name = body.name;
   member.alias = body.alias;
   member.spouseSurname = body.spouseSurname;
+  member.remark = body.remark;
+  member.highlight = body.highlight;
+  member.relation = body.relation;
   member.pictureUrl = body.pictureUrl;
   member.career = body.career;
   member.position = body.position;
@@ -206,6 +213,9 @@ async function updateMember(
   member.parentId = body.parentId;
   member.alias = body.alias || null;
   member.spouseSurname = body.spouseSurname || null;
+  member.remark = body.remark || null;
+  member.highlight = body.highlight || null;
+  member.relation = body.relation || null;
   member.pictureUrl = body.pictureUrl || null;
   member.career = body.career || null;
   member.position = body.position || null;
@@ -269,7 +279,8 @@ async function removeMember(
 }
 
 export const member = {
-  '/member/pinboardData': queryPinboardData,
+  '/member/queryPinboardData': queryPinboardData,
+  '/member/queryCount': queryCount,
   '/member/queryTree': queryMemberTree,
   '/member/queryById': queryMemberById,
   '/member/add': addMember,

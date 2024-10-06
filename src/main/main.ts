@@ -3,7 +3,7 @@ import { app, BrowserWindow, shell, screen } from 'electron';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 import { appDataSource } from './database';
-import { register } from './bridge';
+import { registerBridge } from './bridge';
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -56,6 +56,8 @@ const createWindow = async () => {
     height: height,
     icon: getAssetPath('icon.png'),
     webPreferences: {
+      contextIsolation: true,
+      nodeIntegration: false,
       preload: app.isPackaged
         ? path.join(__dirname, 'preload.js')
         : path.join(__dirname, '../../.erb/dll/preload.js'),
@@ -102,17 +104,13 @@ app.on('window-all-closed', () => {
   }
 });
 
-const dbPath = path.join(
-  app.getPath('appData'),
-  app.getName(),
-  'database/data.sqlite',
-);
+const dbPath = path.join(getAssetPath('database/data.sqlite'));
 
 appDataSource.setOptions({
   database: dbPath,
 });
 
-Promise.all([app.whenReady(), appDataSource.initialize(), register()])
+Promise.all([app.whenReady(), appDataSource.initialize(), registerBridge()])
   .then(() => {
     createWindow();
     app.on('activate', () => {

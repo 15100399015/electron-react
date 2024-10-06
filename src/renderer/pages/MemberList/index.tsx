@@ -274,6 +274,7 @@ const ImportData: React.FC<ImportDataProps> = (props: ImportDataProps) => {
       <ModalForm<{
         parent: number;
       }>
+        width={300}
         title="选择导入根节点"
         open={open}
         form={form}
@@ -285,29 +286,23 @@ const ImportData: React.FC<ImportDataProps> = (props: ImportDataProps) => {
         }}
         submitTimeout={2000}
         onFinish={async (values) => {
-          console.log(values.parent);
-          if (values.parent) {
-            props.onFinish(values.parent);
-            setOpen(false);
-          } else {
-            message.warning('请选择父级');
-          }
+          props.onFinish(values.parent);
+          setOpen(false);
           return true;
         }}
       >
         <ProFormSelect
           showSearch
+          debounceTime={300}
           request={async (params) => {
             const res = await selectMembers(params.keyWords);
-            if (res.total) {
-              return res.data.map((member) => ({
-                value: member.id,
-                label: member.name,
-              }));
-            } else {
-              return [];
-            }
+            return res.data.map((member) => ({
+              value: member.id,
+              label: member.name,
+            }));
           }}
+          placeholder={'导入至此节点'}
+          rules={[{ required: true, message: '请选择要导入那个节点' }]}
           name={'parent'}
         />
       </ModalForm>

@@ -23,7 +23,7 @@ function parseDataUrl(dataUrl: string) {
 }
 
 const routes = {
-  save: async (body: any) => {
+  save: async (body: { fileName: string; fileData: string }) => {
     const { fileName, fileData } = body;
     const { data, isBase64 } = parseDataUrl(fileData);
     if (!isBase64) Promise.reject('必须是 base64');

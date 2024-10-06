@@ -1,5 +1,6 @@
 import { useImperativeHandle, useState } from 'react';
 import {
+  EdgeData,
   Fullscreen,
   Graph,
   GraphData,
@@ -14,70 +15,18 @@ import { renderToString } from 'react-dom/server';
 import { Api } from '../../services';
 import { message } from 'antd';
 import './G6Node';
+import { uColorTheme } from '../../constant';
 
-// 是否开启全屏功能
-function isFullscreenEnabled() {
-  return document.fullscreenEnabled;
+function toG6Gradation(colors: string[]) {
+  return `l(45) 0:${colors[0]} 1:${colors[1]}`;
 }
+
+const defaultColors = uColorTheme[7];
+
 // 是否进入全屏
-function isFullScreen() {
-  return !!document.fullscreenElement;
+function isFullScreen(element: HTMLElement) {
+  return document.fullscreenElement === element;
 }
-
-// 颜色
-const lightColors = [
-  '#8FE9FF',
-  '#87EAEF',
-  '#FFC9E3',
-  '#A7C2FF',
-  '#FFA1E3',
-  '#FFE269',
-  '#BFCFEE',
-  '#FFA0C5',
-  '#D5FF86',
-];
-const darkColors = [
-  '#7DA8FF',
-  '#44E6C1',
-  '#FF68A7',
-  '#7F86FF',
-  '#AE6CFF',
-  '#FF5A34',
-  '#5D7092',
-  '#FF6565',
-  '#6BFFDE',
-];
-const uLightColors = [
-  '#CFF6FF',
-  '#BCFCFF',
-  '#FFECF5',
-  '#ECFBFF',
-  '#EAD9FF',
-  '#FFF8DA',
-  '#DCE2EE',
-  '#FFE7F0',
-  '#EEFFCE',
-];
-const uDarkColors = [
-  '#CADBFF',
-  '#A9FFEB',
-  '#FFC4DD',
-  '#CACDFF',
-  '#FFD4F2',
-  '#FFD3C9',
-  '#EBF2FF',
-  '#FFCBCB',
-  '#CAFFF3',
-];
-
-const gColors: string[] = [];
-const ugColors: string[] = [];
-lightColors.forEach((color, i) => {
-  gColors.push('l(45) 0:' + color + ' 1:' + darkColors[i]);
-});
-uLightColors.forEach((color, i) => {
-  ugColors.push('l(45) 0:' + color + ' 1:' + uDarkColors[i]);
-});
 
 // 格式化数据
 function formatData(data: API.DataModel.Member[]): GraphData {
@@ -86,7 +35,7 @@ function formatData(data: API.DataModel.Member[]): GraphData {
       return {
         id: String(node.id),
         data: { ...node },
-      };
+      } as NodeData;
     })
     .filter((item) => !!item);
   const edges: GraphData['edges'] = data
@@ -97,7 +46,10 @@ function formatData(data: API.DataModel.Member[]): GraphData {
       return {
         source: String(node.parentId),
         target: String(node.id),
-      };
+        style: {
+          labelText: node.relation || void 0,
+        },
+      } as EdgeData;
     })
     .filter((item) => !!item);
   return { nodes, edges };
@@ -144,18 +96,13 @@ export const BloodlineGraph = React.forwardRef<
       node: {
         type: 'chart-node',
         style(data) {
-          // 0 3 6
-          const index = 6;
-          const fillColor = `l(45) 0:${uLightColors[index]} 1:${uDarkColors[index]}`;
-          const strokeColor = `l(45) 0:${uDarkColors[index]} 1:${uLightColors[index]}`;
+          const fillColor = toG6Gradation([...defaultColors]);
+          const strokeColor = toG6Gradation([...defaultColors].reverse());
           return {
             cursor: 'pointer',
-            labelPlacement: 'center',
             ports: [{ placement: 'top' }, { placement: 'bottom' }],
-            radius: 5,
             size: [100, 60],
             fill: fillColor,
-            lineWidth: 1,
             stroke: strokeColor,
           };
         },
@@ -168,14 +115,23 @@ export const BloodlineGraph = React.forwardRef<
             endArrow: true,
             endArrowType: 'vee',
             endArrowSize: 5,
-            radius: 5,
             lineWidth: 2,
             stroke: '#cccccc',
+
+            labelBackground: true,
+            labelBackgroundFill: '#f9f0ff',
+            labelBackgroundOpacity: 1,
+            labelBackgroundLineWidth: 1,
+            labelBackgroundStroke: '#7e3feb',
+            labelPadding: [1, 2],
+            labelFontSize: 5,
+            labelBackgroundRadius: 2,
           };
         },
       },
       layout: {
         type: 'dagre',
+        nodesep: 10,
         nodeSize: [100, 60],
       },
       behaviors: [
@@ -185,9 +141,9 @@ export const BloodlineGraph = React.forwardRef<
         },
         {
           type: 'zoom-canvas',
-          enable: () => isFullScreen(),
+          enable: () => isFullScreen(container.current!),
           trigger: ['Control'],
-        }
+        },
       ],
       plugins: [
         function () {
@@ -263,7 +219,7 @@ export const BloodlineGraph = React.forwardRef<
               } else if (item === 'zoom-out') {
                 this.zoomBy(0.5);
               } else if (item === 'auto-fit') {
-                if (isFullScreen()) {
+                if (isFullScreen(container.current!)) {
                   this.getPluginInstance<Fullscreen>('fullscreen')?.exit();
                 } else {
                   this.getPluginInstance<Fullscreen>('fullscreen')?.request();

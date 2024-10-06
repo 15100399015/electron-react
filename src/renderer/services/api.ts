@@ -1,8 +1,12 @@
 /** 获取看板数据 */
 export async function queryPinboardData() {
-  return window.bridge.request('/member/pinboardData');
+  return window.bridge.request('/member/queryPinboardData');
 }
 
+/** 获取成总数 */
+export async function queryMemberCount() {
+  return window.bridge.request('/member/queryCount');
+}
 /** 获取成员 */
 export async function queryMemberTree(rootId?: number) {
   return window.bridge.request('/member/queryTree', {
@@ -10,7 +14,7 @@ export async function queryMemberTree(rootId?: number) {
   });
 }
 
-/** 获取成员 */
+/** 根据id获取成员 */
 export async function queryMemberById(id: number) {
   return window.bridge.request('/member/queryById', { id });
 }

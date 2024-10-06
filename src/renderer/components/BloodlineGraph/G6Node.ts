@@ -8,6 +8,19 @@ import {
   Badge,
   RectStyleProps,
 } from '@antv/g6';
+import { uColorTheme } from '../../constant';
+
+function truncateString(str?: unknown) {
+  if (typeof str === 'string' && str.length > 9) {
+    return str.slice(0, 9) + '...';
+  } else {
+    return str;
+  }
+}
+
+function toG6Gradation(colors: string[]) {
+  return `l(45) 0:${colors[0]} 1:${colors[1]}`;
+}
 
 /**
  * 自定义节点
@@ -18,8 +31,18 @@ class ChartNode extends Rect {
   }
 
   protected getKeyStyle(attributes: Required<RectStyleProps>) {
-    return { ...super.getKeyStyle(attributes) };
+    const colors = uColorTheme[this.data.highlight || 7];
+    const fillColor = toG6Gradation([...colors]);
+    const strokeColor = toG6Gradation([...colors].reverse());
+    return {
+      ...super.getKeyStyle(attributes),
+      fill: fillColor,
+      stroke: strokeColor,
+      radius: 5,
+      lineWidth: 1,
+    };
   }
+
   protected getLabelStyle(): LabelStyleProps {
     const text = this.data.name!;
     return {
@@ -44,8 +67,8 @@ class ChartNode extends Rect {
     };
   }
 
-  getDateStyle(): DisplayObject['attributes'] {
-    const text = `${this.data.birthDate || '***'}至${this.data.deathDate || '***'}`;
+  getRemarkStyle(): DisplayObject['attributes'] {
+    const text = `备注：${truncateString(this.data.remark) || ''}`;
     return {
       text: text,
       fontSize: 5,
@@ -65,8 +88,8 @@ class ChartNode extends Rect {
       fill: '#343f4a',
       textAlign: 'left',
       transform: `translate(${42 - text.length * 8}, -18)`,
-      backgroundFill: `l(45) 0:#ffffff 1:#EBF2FF`,
-      padding: [0, 4],
+      backgroundFill: `#ffffff`,
+      padding: [1, 4],
     };
   }
 
@@ -76,11 +99,11 @@ class ChartNode extends Rect {
     const spouseSurnameStyle = this.getSpouseSurnameStyle();
     this.upsert('spouseSurname', Label, spouseSurnameStyle, container);
 
+    const remarkStyle = this.getRemarkStyle();
+    this.upsert('remark', Label, remarkStyle, container);
+
     const generationStyle = this.getGenerationStyle();
     this.upsert('generation', Badge, generationStyle, container);
-
-    const dateStyle = this.getDateStyle();
-    this.upsert('date', Label, dateStyle, container);
   }
 }
 

@@ -5,6 +5,9 @@ export class Member {
   generation?: number;
   alias?: string | null;
   spouseSurname?: string | null;
+  remark?: string | null;
+  highlight?: string | null;
+  relation?: string | null;
   pictureUrl?: string | null;
   career?: string | null;
   position?: string | null;

@@ -9,7 +9,7 @@ const map: Record<string, Function> = {
   database: databaseBridgeHander,
 };
 
-export async function register() {
+export async function registerBridge() {
   Object.entries(map).forEach(([key, value]) => {
     ipcMain.handle(key, (event, ...args) => value(...args));
   });
