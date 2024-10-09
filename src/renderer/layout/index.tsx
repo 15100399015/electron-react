@@ -1,7 +1,7 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { ProLayout } from '@ant-design/pro-components';
 import { ApartmentOutlined, BarsOutlined } from '@ant-design/icons';
-import logo from '../../../assets/icon.png'
+import logo from '../../../assets/icon.png';
 export function Layout() {
   const location = useLocation();
 
@@ -21,7 +21,7 @@ export function Layout() {
             icon: <ApartmentOutlined />,
           },
           {
-            path: '/member/list',
+            path: '/list',
             name: '人员管理',
             icon: <BarsOutlined />,
           },

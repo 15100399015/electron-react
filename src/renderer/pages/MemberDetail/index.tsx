@@ -99,7 +99,7 @@ export const MemberDetail: FC = () => {
               {data?.parentId && data?.parentId !== -1 ? (
                 <a
                   onClick={() => {
-                    navigate(`/member/detail/${data.parentId}`);
+                    navigate(`/detail/${data.parentId}`);
                   }}
                 >
                   查看

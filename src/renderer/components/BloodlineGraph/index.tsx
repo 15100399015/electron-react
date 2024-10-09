@@ -246,7 +246,9 @@ export const BloodlineGraph = React.forwardRef<
 
     graph.on(NodeEvent.CLICK, (event) => {
       const { target } = event;
-      navigate(`/member/detail/${target.id}`);
+      if (target.id) {
+        window.bridge.window('toDetail', { id: target.id });
+      }
     });
 
     return () => {

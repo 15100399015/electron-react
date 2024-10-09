@@ -1,17 +1,17 @@
 import path from 'path';
-import { app, BrowserWindow, shell, screen } from 'electron';
-import MenuBuilder from './menu';
-import { resolveHtmlPath } from './util';
+import { app } from 'electron';
+import { getAssetPath, resolveHtmlPath } from './util';
 import { appDataSource } from './database';
 import { registerBridge } from './bridge';
+import { createBrowserWindow, mainWindow } from './window';
 
-let mainWindow: BrowserWindow | null = null;
-
+// 开发环境 source map 支持
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
   sourceMapSupport.install();
 }
 
+// 是否开启 debug
 const isDebug =
   process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
 
@@ -32,66 +32,19 @@ const installExtensions = async () => {
     .catch(console.log);
 };
 
-export const getAssetPath = (...paths: string[]): string => {
-  const RESOURCES_PATH = app.isPackaged
-    ? path.join(process.resourcesPath, 'assets')
-    : path.join(__dirname, '../../assets');
-
-  return path.join(RESOURCES_PATH, ...paths);
-};
-
 // 创建窗口
-const createWindow = async () => {
+const createMainWindow = async () => {
   if (isDebug) {
     await installExtensions();
   }
 
-  const primaryDisplay = screen.getPrimaryDisplay();
-  const { width, height } = primaryDisplay.workAreaSize;
-
+  const window = createBrowserWindow(resolveHtmlPath('index.html'), {
+    maximize: true,
+  });
   // 创建窗口
-  mainWindow = new BrowserWindow({
-    show: false,
-    width: width,
-    height: height,
-    icon: getAssetPath('icon.png'),
-    webPreferences: {
-      contextIsolation: true,
-      nodeIntegration: false,
-      preload: app.isPackaged
-        ? path.join(__dirname, 'preload.js')
-        : path.join(__dirname, '../../.erb/dll/preload.js'),
-    },
-  });
-
-  mainWindow.loadURL(resolveHtmlPath('index.html'));
-
-  // 显示窗口
-  mainWindow.on('ready-to-show', () => {
-    if (!mainWindow) {
-      throw new Error('"mainWindow" is not defined');
-    }
-    if (process.env.START_MINIMIZED) {
-      mainWindow.minimize();
-    } else {
-      mainWindow.maximize();
-      mainWindow.focus();
-    }
-  });
-
-  // 窗口关闭
-  mainWindow.on('closed', () => {
-    mainWindow = null;
-  });
-
-  // 系统菜单设置
-  const menuBuilder = new MenuBuilder(mainWindow);
-  menuBuilder.buildMenu();
-
-  // 超链接在外部打开
-  mainWindow.webContents.setWindowOpenHandler((edata) => {
-    shell.openExternal(edata.url);
-    return { action: 'deny' };
+  mainWindow.set(window);
+  window.on('closed', () => {
+    mainWindow.clear();
   });
 };
 
@@ -112,9 +65,9 @@ appDataSource.setOptions({
 
 Promise.all([app.whenReady(), appDataSource.initialize(), registerBridge()])
   .then(() => {
-    createWindow();
+    createMainWindow();
     app.on('activate', () => {
-      if (mainWindow === null) createWindow();
+      if (!mainWindow.get()) createMainWindow();
     });
   })
   .catch((error) => {
