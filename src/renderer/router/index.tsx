@@ -1,9 +1,6 @@
 import { createHashRouter } from 'react-router-dom';
 
 import { Layout } from '../layout';
-import { MemberDetail } from '../pages/MemberDetail';
-import { MemberList } from '../pages/MemberList';
-import { Pinboard } from '../pages/Pinboard';
 
 const router = createHashRouter([
   {
@@ -11,17 +8,19 @@ const router = createHashRouter([
     children: [
       {
         path: '/',
-        Component: Pinboard,
+        lazy: async () => {
+          const res = await import('../pages/Pinboard');
+          return { Component: res.Pinboard };
+        },
       },
       {
         path: '/list',
-        Component: MemberList,
+        lazy: async () => {
+          const res = await import('../pages/MemberList');
+          return { Component: res.MemberList };
+        },
       },
     ],
-  },
-  {
-    path: '/detail/:memberId',
-    Component: MemberDetail,
   },
 ]);
 

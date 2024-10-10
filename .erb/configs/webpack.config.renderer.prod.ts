@@ -26,12 +26,15 @@ const configuration: webpack.Configuration = {
 
   target: ['web', 'electron-renderer'],
 
-  entry: [path.join(webpackPaths.srcRendererPath, 'index.tsx')],
+  entry: {
+    index: path.join(webpackPaths.srcRendererPath, 'entry/index.tsx'),
+    detail: path.join(webpackPaths.srcRendererPath, 'entry/detail.tsx'),
+  },
 
   output: {
     path: webpackPaths.distRendererPath,
     publicPath: './',
-    filename: 'renderer.js',
+    filename: 'renderer.[name].js',
     library: {
       type: 'umd',
     },
@@ -129,9 +132,24 @@ const configuration: webpack.Configuration = {
         removeAttributeQuotes: true,
         removeComments: true,
       },
+      chunks: ['index'],
       isBrowser: false,
       isDevelopment: false,
     }),
+
+    new HtmlWebpackPlugin({
+      filename: 'detail.html',
+      template: path.join(webpackPaths.srcRendererPath, 'index.ejs'),
+      minify: {
+        collapseWhitespace: true,
+        removeAttributeQuotes: true,
+        removeComments: true,
+      },
+      chunks: ['detail'],
+      isBrowser: false,
+      isDevelopment: false,
+    }),
+
     new CopyPlugin({
       patterns: [
         {

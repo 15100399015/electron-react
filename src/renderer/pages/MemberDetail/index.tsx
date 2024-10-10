@@ -1,21 +1,48 @@
 import { UpdateForm } from '../../components/UpdateForm';
 import { Api } from '../../services';
 import { PageContainer, ProCard } from '@ant-design/pro-components';
-import { Button, Descriptions, message, Space, Statistic } from 'antd';
+import {
+  Button,
+  Descriptions,
+  message,
+  Modal,
+  Popconfirm,
+  Space,
+  Statistic,
+} from 'antd';
 import type { FC } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { EventTable } from './eventTable';
 import { useNavigate, useParams } from 'react-router-dom';
 import { BloodlineGraph } from '../../components/BloodlineGraph';
 
+const requestAdd = async (fields: API.DataModel.Member) => {
+  try {
+    await Api.addMember({ ...fields });
+    message.success('添加成功');
+  } catch (error) {
+    message.error('添加失败');
+    throw new Error('Error while add member');
+  }
+};
+
 const requestUpdate = async (fields: API.DataModel.Member) => {
   try {
     await Api.updateMember(fields);
     message.success('更新成功');
-    return true;
   } catch (error) {
     message.error('更新失败');
-    return false;
+    throw new Error('Error while update member');
+  }
+};
+
+const requestRemove = async (id: number) => {
+  try {
+    await Api.removeMember([id]);
+    message.success('删除成功');
+  } catch (error) {
+    message.error('删除失败');
+    throw new Error('Error while remove member');
   }
 };
 
@@ -35,6 +62,17 @@ export const MemberDetail: FC = () => {
     fetchData();
   }, [params.memberId]);
 
+  // 处理删除
+  async function handleDelete(id: number) {
+    await requestRemove(id);
+    Modal.info({
+      content: '删除成功',
+      onOk() {
+        window.close();
+      },
+    });
+  }
+
   // 格式化年龄信息
   const ageInfo = useMemo(() => {
     if (!data) return { title: '享年', age: null };
@@ -53,7 +91,11 @@ export const MemberDetail: FC = () => {
 
   // 处理表单提交
   async function handleFormSubmit(value: API.DataModel.Member) {
-    await requestUpdate({ ...value, id: data!.id });
+    if (currentRow?.id) {
+      await requestUpdate({ ...value, id: currentRow.id });
+    } else {
+      await requestAdd(value);
+    }
     handleModalOpen(false);
     setCurrentRow(undefined);
     await fetchData();
@@ -70,7 +112,6 @@ export const MemberDetail: FC = () => {
       extra={
         <Space>
           <Button
-            type="primary"
             onClick={() => {
               handleModalOpen(true);
               setCurrentRow({ parentId: data?.id });
@@ -87,6 +128,15 @@ export const MemberDetail: FC = () => {
           >
             编辑
           </Button>
+          <Popconfirm
+            title="确定删除吗"
+            description="删除后不可找回"
+            onConfirm={() => {
+              handleDelete(data!.id!);
+            }}
+          >
+            <Button danger>删除</Button>
+          </Popconfirm>
         </Space>
       }
       content={
@@ -99,7 +149,7 @@ export const MemberDetail: FC = () => {
               {data?.parentId && data?.parentId !== -1 ? (
                 <a
                   onClick={() => {
-                    navigate(`/detail/${data.parentId}`);
+                    window.bridge.window('toDetail', { id: data.parentId! });
                   }}
                 >
                   查看

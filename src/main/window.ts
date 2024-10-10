@@ -1,7 +1,6 @@
 import path from 'path';
 import { app, BrowserWindow, shell, screen, BaseWindow } from 'electron';
-import MenuBuilder from './menu';
-import { getAssetPath } from './util';
+import { getAssetPath, resolveHtmlPath } from './util';
 
 class WindowManager {
   _window?: BrowserWindow;
@@ -16,7 +15,7 @@ class WindowManager {
   }
 }
 
-export const mainWindow = new WindowManager();
+export const indexWindow = new WindowManager();
 
 export const detailWindow = new WindowManager();
 
@@ -39,8 +38,6 @@ export function createBrowserWindow(
     height: Math.floor((height * 9) / 10),
     parent: option?.parent,
     webPreferences: {
-      contextIsolation: true,
-      nodeIntegration: false,
       preload: app.isPackaged
         ? path.join(__dirname, 'preload.js')
         : path.join(__dirname, '../../.erb/dll/preload.js'),
@@ -54,12 +51,47 @@ export function createBrowserWindow(
       window.show();
     }
   });
-  const menuBuilder = new MenuBuilder(window);
-  menuBuilder.buildMenu();
+  window.webContents.on('context-menu', (event) => {
+    event.preventDefault();
+  });
+
   window.webContents.setWindowOpenHandler((edata) => {
     shell.openExternal(edata.url);
     return { action: 'deny' };
   });
+
   window.loadURL(url);
   return window;
 }
+
+export const createIndexWindow = async () => {
+  const current = indexWindow.get();
+  if (current) {
+    return current;
+  }
+  const window = createBrowserWindow(resolveHtmlPath('index.html'), {
+    maximize: true,
+  });
+  indexWindow.set(window);
+  window.on('closed', () => {
+    indexWindow.clear();
+  });
+  return window;
+};
+
+export const createDetailWindow = async (id: number) => {
+  const current = detailWindow.get();
+  if (current) {
+    current.loadURL(resolveHtmlPath(`detail.html#/${id}`));
+    return current;
+  }
+  const window = createBrowserWindow(resolveHtmlPath(`detail.html#/${id}`), {
+    parent: indexWindow.get(),
+  });
+  detailWindow.set(window);
+  window.on('closed', () => {
+    indexWindow.get()?.focus();
+    detailWindow.clear();
+  });
+  return window;
+};

@@ -1,10 +1,4 @@
-import {
-  Menu,
-  BrowserWindow,
-  MenuItemConstructorOptions,
-  shell,
-  app,
-} from 'electron';
+import { Menu, BrowserWindow, MenuItemConstructorOptions, app } from 'electron';
 
 interface DarwinMenuItemConstructorOptions extends MenuItemConstructorOptions {
   selector?: string;
@@ -12,17 +6,10 @@ interface DarwinMenuItemConstructorOptions extends MenuItemConstructorOptions {
 }
 
 export default class MenuBuilder {
-  mainWindow: BrowserWindow;
-
-  constructor(mainWindow: BrowserWindow) {
-    this.mainWindow = mainWindow;
+  get window() {
+    return BrowserWindow.getFocusedWindow();
   }
-
   buildMenu(): Menu {
-    this.mainWindow.webContents.on('context-menu', (event) => {
-      event.preventDefault();
-    });
-
     const template =
       process.platform === 'darwin'
         ? this.buildDarwinTemplate()
@@ -74,21 +61,21 @@ export default class MenuBuilder {
           label: 'Reload',
           accelerator: 'Command+R',
           click: () => {
-            this.mainWindow.webContents.reload();
+            this.window?.webContents.reload();
           },
         },
         {
           label: 'Toggle Full Screen',
           accelerator: 'Ctrl+Command+F',
           click: () => {
-            this.mainWindow.setFullScreen(!this.mainWindow.isFullScreen());
+            this.window?.setFullScreen(!this.window?.isFullScreen());
           },
         },
         {
           label: 'Toggle Developer Tools',
           accelerator: 'Alt+Command+I',
           click: () => {
-            this.mainWindow.webContents.toggleDevTools();
+            this.window?.webContents.toggleDevTools();
           },
         },
       ],
@@ -100,7 +87,7 @@ export default class MenuBuilder {
           label: 'Toggle Full Screen',
           accelerator: 'Ctrl+Command+F',
           click: () => {
-            this.mainWindow.setFullScreen(!this.mainWindow.isFullScreen());
+            this.window?.setFullScreen(!this.window?.isFullScreen());
           },
         },
       ],
@@ -138,21 +125,21 @@ export default class MenuBuilder {
             label: '&Reload',
             accelerator: 'Ctrl+R',
             click: () => {
-              this.mainWindow.webContents.reload();
+              this.window?.webContents.reload();
             },
           },
           {
             label: 'Toggle &Full Screen',
             accelerator: 'F11',
             click: () => {
-              this.mainWindow.setFullScreen(!this.mainWindow.isFullScreen());
+              this.window?.setFullScreen(!this.window?.isFullScreen());
             },
           },
           {
             label: 'Toggle &Developer Tools',
             accelerator: 'Alt+Ctrl+I',
             click: () => {
-              this.mainWindow.webContents.toggleDevTools();
+              this.window?.webContents.toggleDevTools();
             },
           },
         ],

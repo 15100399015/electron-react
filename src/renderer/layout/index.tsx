@@ -12,6 +12,7 @@ export function Layout() {
       logo={logo}
       contentStyle={{ padding: 0 }}
       collapsed
+      disableMobile
       collapsedButtonRender={false}
       route={{
         routes: [

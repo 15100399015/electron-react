@@ -10,17 +10,15 @@ import {
 } from '@ant-design/pro-components';
 import { Button, Form, message, Popconfirm } from 'antd';
 import React, { useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { queryMembers } from '../../services/api';
 
 const requestAdd = async (fields: API.DataModel.Member) => {
   try {
     await Api.addMember({ ...fields });
     message.success('添加成功');
-    return true;
   } catch (error) {
     message.error('添加失败');
-    return false;
+    throw new Error('Error while add member');
   }
 };
 
@@ -28,10 +26,9 @@ const requestUpdate = async (fields: API.DataModel.Member) => {
   try {
     await Api.updateMember(fields);
     message.success('更新成功');
-    return true;
   } catch (error) {
     message.error('更新失败');
-    return false;
+    throw new Error('Error while update member');
   }
 };
 
@@ -40,16 +37,13 @@ const requestRemove = async (selectedRows: API.DataModel.Member[]) => {
   try {
     await Api.removeMember(selectedRows.map((row) => row.id!));
     message.success('删除成功');
-    return true;
   } catch (error) {
     message.error('删除失败');
-    return false;
+    throw new Error('Error while remove member');
   }
 };
 
 export const MemberList: React.FC = () => {
-  const navigate = useNavigate();
-
   const actionRef = useRef<ActionType>();
   const [modalOpen, handleModalOpen] = useState<boolean>(false);
   const [currentRow, setCurrentRow] = useState<API.DataModel.Member>();
@@ -59,7 +53,7 @@ export const MemberList: React.FC = () => {
 
   // 跳转到详情页
   async function handleGoDetailPage(record: API.DataModel.Member) {
-    navigate(`/member/detail/${record.id}`);
+    window.bridge.window('toDetail', { id: record.id! });
   }
 
   // 打开编辑框
@@ -106,7 +100,7 @@ export const MemberList: React.FC = () => {
 
   // 表单提交
   async function handleFormSubmit(value: API.DataModel.Member) {
-    if (currentRow) {
+    if (currentRow?.id) {
       await requestUpdate({ ...value, id: currentRow.id });
     } else {
       await requestAdd(value);

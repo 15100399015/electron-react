@@ -1,21 +1,8 @@
-import { resolveHtmlPath } from '../../util';
-import { createBrowserWindow, detailWindow, mainWindow } from '../../window';
+import { createDetailWindow } from '../../window';
 
 const routes = {
   toDetail: async (body: { id: number }) => {
-    const current = detailWindow.get();
-    if (current) {
-      current.loadURL(resolveHtmlPath(`index.html#/detail/${body.id}`));
-    } else {
-      const window = createBrowserWindow(
-        resolveHtmlPath(`index.html#/detail/${body.id}`),
-        { parent: mainWindow.get() },
-      );
-      detailWindow.set(window);
-      window.on('closed', () => {
-        detailWindow.clear();
-      });
-    }
+    createDetailWindow(body.id);
   },
 };
 

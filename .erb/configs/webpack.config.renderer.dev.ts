@@ -45,16 +45,15 @@ const configuration: webpack.Configuration = {
 
   target: ['web', 'electron-renderer'],
 
-  entry: [
-    `webpack-dev-server/client?http://localhost:${port}/dist`,
-    'webpack/hot/only-dev-server',
-    path.join(webpackPaths.srcRendererPath, 'index.tsx'),
-  ],
+  entry: {
+    index: path.join(webpackPaths.srcRendererPath, 'entry/index.tsx'),
+    detail: path.join(webpackPaths.srcRendererPath, 'entry/detail.tsx'),
+  },
 
   output: {
     path: webpackPaths.distRendererPath,
     publicPath: '/',
-    filename: 'renderer.dev.js',
+    filename: 'renderer.[name].dev.js',
     library: {
       type: 'umd',
     },
@@ -157,6 +156,22 @@ const configuration: webpack.Configuration = {
         removeAttributeQuotes: true,
         removeComments: true,
       },
+      chunks: ['index'],
+      isBrowser: false,
+      env: process.env.NODE_ENV,
+      isDevelopment: process.env.NODE_ENV !== 'production',
+      nodeModules: webpackPaths.appNodeModulesPath,
+    }),
+
+    new HtmlWebpackPlugin({
+      filename: path.join('detail.html'),
+      template: path.join(webpackPaths.srcRendererPath, 'index.ejs'),
+      minify: {
+        collapseWhitespace: true,
+        removeAttributeQuotes: true,
+        removeComments: true,
+      },
+      chunks: ['detail'],
       isBrowser: false,
       env: process.env.NODE_ENV,
       isDevelopment: process.env.NODE_ENV !== 'production',
